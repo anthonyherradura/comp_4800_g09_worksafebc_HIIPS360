@@ -1,5 +1,5 @@
 .app-shell {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,20 +8,12 @@
 
 .phone {
     width: 100%;
-    max-width: 362px;
-    height: 100vh;
-    max-height: 707px;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     background: var(--wsbc-white);
 }
 
-@media (max-width: 400px) {
-    .phone {
-        max-height: none;
-        max-width: none;
-    }
-}
 
 .header {
     background: var(--wsbc-orange);
