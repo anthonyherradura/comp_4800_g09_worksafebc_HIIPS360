@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomePage from "./pages/Homepage/Homepage";
+import PlanningPage from "./pages/Planning/Planning";
 
  
 const Placeholder = ({ name }) => (
@@ -15,7 +16,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
-          <Route path="/planning" element={<Placeholder name="Planning" />} />
+          <Route path="/planning" element={<PlanningPage />} />
           <Route path="/hazard" element={<Placeholder name="Hazard" />} />
           <Route path="/summary" element={<Placeholder name="Summary" />} />
         </Route>
