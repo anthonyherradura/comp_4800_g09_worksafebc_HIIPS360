@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomePage from "./pages/Homepage/Homepage";
 
-
+ 
 const Placeholder = ({ name }) => (
   <div style={{ padding: 24, fontSize: 20 }}>{name} page</div>
 );
