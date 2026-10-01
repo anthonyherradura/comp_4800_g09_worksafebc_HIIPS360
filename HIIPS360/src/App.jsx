@@ -2,8 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomePage from "./pages/Homepage/Homepage";
 
-// Temporary stand-in until each page is built.
-// Replace each with its own file in src/pages/ (e.g. DashboardPage.jsx).
+
 const Placeholder = ({ name }) => (
   <div style={{ padding: 24, fontSize: 20 }}>{name} page</div>
 );

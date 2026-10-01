@@ -1,0 +1,105 @@
+:root {
+    /* Primary */
+    --wsbc-white: #ffffff;
+    --wsbc-black: #000000;
+    --wsbc-warm-grey: #776e64;
+    --wsbc-orange: #ed8b00;
+    --wsbc-bodycopy: #453f39;
+
+    /* Secondary */
+    --wsbc-mountain-blue: #6399ae;
+    --wsbc-huckleberry-red: #a4343a;
+    --wsbc-sunset-orange: #dc4405;
+    --wsbc-sunrise-yellow: #f1be48;
+    --wsbc-moss-green: #888d30;
+
+    /* Warm greys (preferred) */
+    --wsbc-ash-grey: #f1f0ef;
+    --wsbc-silver-grey: #e4e2e0;
+    --wsbc-steel-grey: #c9c5c1;
+    --wsbc-smoke-grey: #ada8a2;
+    --wsbc-iron-grey: #47423c;
+
+    /* Special use */
+    --wsbc-pale-moss-green: #e7e8d6;
+    --wsbc-pale-mountain-blue: #e0ebef;
+    --wsbc-pale-sunrise-yellow: #f9e0a0;
+
+    /* Typography (Noto with Verdana fallback, per the design system) */
+    --font-body: "Noto Sans", Verdana, sans-serif;
+    --font-heading: "Halis", Verdana, sans-serif;
+    --fs-h1: 1.7rem;
+    --fs-h2: 1.3rem;
+    --fs-h3: 1.1rem;
+    --fs-body: 1rem;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    color: var(--wsbc-bodycopy);
+    background: var(--wsbc-iron-grey);
+}
+
+
+h1 {
+    font-family: var(--font-heading);
+    font-size: var(--fs-h1);
+}
+
+h2 {
+    font-family: var(--font-heading);
+    font-size: var(--fs-h2);
+    color: var(--wsbc-orange);
+    
+}
+
+h3 {
+    font-size: var(--fs-h3);
+}
+
+a {
+    color: inherit;
+}
+
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.2rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-orange {
+    background: var(--wsbc-orange);
+    border-color: var(--wsbc-orange);
+    color: var(--wsbc-white);
+}
+
+.btn-outline-orange {
+    background: transparent;
+    border-color: var(--wsbc-orange);
+    color: var(--wsbc-orange);
+}
+
+.btn-grey {
+    background: var(--wsbc-silver-grey);
+    border-color: var(--wsbc-silver-grey);
+    color: var(--wsbc-bodycopy);
+}
+
+.btn:hover {
+    filter: brightness(0.92);
+}

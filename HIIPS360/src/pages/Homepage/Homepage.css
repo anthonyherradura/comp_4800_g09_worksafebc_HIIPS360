@@ -1,0 +1,95 @@
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 26px 22px 20px;
+    min-height: 0;
+}
+
+.add-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--wsbc-silver-grey);
+    padding: 10px 16px;
+}
+
+.add-input {
+    flex: 1;
+    min-width: 0;
+    height: 57px;
+    border: 1px solid var(--wsbc-smoke-grey);
+    border-radius: 0;
+    background: var(--wsbc-steel-grey);
+    color: var(--wsbc-bodycopy);
+    padding: 0 14px;
+    font: inherit;
+    font-size: 1.125rem;
+}
+
+.add-input:focus-visible {
+    outline: 3px solid var(--wsbc-orange);
+    outline-offset: 1px;
+}
+
+
+.add-btn {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 8px;
+}
+
+.add-btn svg {
+    width: 100%;
+    height: 100%;
+}
+
+.list {
+    flex: 1;
+    margin: 0;
+    padding: 26px 16px;
+    list-style: none;
+    background: var(--wsbc-silver-grey);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.list-bar {
+    flex: 1;
+    height: 34px;
+    background: var(--wsbc-steel-grey);
+}
+
+.remove-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-right: 6px;
+    padding: 3px;
+    border: none;
+    background: none;
+    color: var(--wsbc-orange);
+    cursor: pointer;
+}
+
+.remove-btn svg {
+    width: 100%;
+    height: 100%;
+}
+
+.add-btn:focus-visible,
+.remove-btn:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+    border-radius: 6px;
+}

@@ -1,0 +1,88 @@
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--wsbc-iron-grey);
+}
+
+.phone {
+    width: 100%;
+    max-width: 362px;
+    height: 100vh;
+    max-height: 707px;
+    display: flex;
+    flex-direction: column;
+    background: var(--wsbc-white);
+}
+
+@media (max-width: 400px) {
+    .phone {
+        max-height: none;
+        max-width: none;
+    }
+}
+
+.header {
+    background: var(--wsbc-orange);
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    flex-shrink: 0;
+    padding: 0 16px;
+}
+
+.logo {
+    margin: 0;
+    font-size: 2.75rem;
+    font-weight: 500;
+    letter-spacing: -1px;
+    color: var(--wsbc-white);
+}
+
+.logo span {
+    color: var(--wsbc-black);
+}
+
+/* Area where each page is rendered */
+.page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 70px;
+    background: var(--wsbc-orange);
+    flex-shrink: 0;
+}
+
+.nav-btn {
+    width: 44px;
+    height: 44px;
+    padding: 5px;
+    color: var(--wsbc-black);
+    opacity: 0.55;
+}
+
+
+.nav-btn.active {
+    opacity: 1;
+}
+
+.nav-btn svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nav-btn:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+    border-radius: 6px;
+    opacity: 1;
+}
