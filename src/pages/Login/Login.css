@@ -1,0 +1,9 @@
+/* Shared by the login and register pages */
+.auth-page {
+    gap: 24px;
+}
+
+.auth-title {
+    margin: 0;
+    color: var(--wsbc-bodycopy);
+}

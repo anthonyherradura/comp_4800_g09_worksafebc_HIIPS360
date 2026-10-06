@@ -1,0 +1,103 @@
+.landing {
+    gap: 28px;
+}
+
+.prototype-notice {
+    margin: 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--wsbc-sunrise-yellow);
+    background: var(--wsbc-pale-sunrise-yellow);
+    color: var(--wsbc-bodycopy);
+    font-size: 0.9375rem;
+}
+
+.landing-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.landing-title {
+    margin: 0;
+    color: var(--wsbc-bodycopy);
+    line-height: 1.2;
+}
+
+.landing-lead {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+}
+
+.landing-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.landing-btn {
+    min-height: 48px;
+    width: 100%;
+    text-decoration: none;
+}
+
+.landing-btn:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+}
+
+.install-help {
+    margin: 0;
+    padding: 12px 14px;
+    background: var(--wsbc-ash-grey);
+}
+
+.install-help-title {
+    margin: 0 0 6px;
+    font-weight: 700;
+}
+
+.install-help ol {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.landing-alt {
+    margin: 0;
+    text-align: center;
+}
+
+.landing-alt a {
+    font-weight: 700;
+}
+
+/* Orange H2s fail contrast on white, so headings here use body copy colour */
+.landing-subtitle {
+    margin: 0 0 12px;
+    color: var(--wsbc-bodycopy);
+}
+
+.benefits {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.benefit {
+    padding: 14px 16px;
+    border-left: 4px solid var(--wsbc-orange);
+    background: var(--wsbc-ash-grey);
+}
+
+.benefit-title {
+    margin: 0 0 4px;
+}
+
+.benefit-text {
+    margin: 0;
+    line-height: 1.5;
+}

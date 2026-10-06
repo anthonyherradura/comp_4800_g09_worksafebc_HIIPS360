@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import useAuth from "../auth/useAuth";
 import "../styles/tokens.css";
 import "./Layout.css";
 
@@ -43,7 +44,7 @@ const SummaryIcon = () => (
 
 
 const NAV_ITEMS = [
-    { to: "/", label: "Home", Icon: HomeIcon },
+    { to: "/home", label: "Home", Icon: HomeIcon },
     { to: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
     { to: "/planning", label: "Planning", Icon: PlanningIcon },
     { to: "/hazard", label: "Hazard", Icon: HazardIcon },
@@ -51,6 +52,14 @@ const NAV_ITEMS = [
 ];
 
 export default function Layout() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSignOut = async () => {
+        await logout();
+        navigate("/login", { replace: true });
+    };
+
     return (
         <div className="app-shell">
             <div className="phone">
@@ -58,6 +67,9 @@ export default function Layout() {
                     <h1 className="logo">
                         HIIPS<span>360</span>
                     </h1>
+                    <button type="button" className="signout-btn" onClick={handleSignOut}>
+                        Sign out
+                    </button>
                 </header>
 
                 {/* The current page renders here */}
@@ -68,7 +80,7 @@ export default function Layout() {
 
                 <nav className="nav" aria-label="Main navigation">
                     {NAV_ITEMS.map(({ to, label, Icon }) => (
-                        <NavLink key={to} to={to} end={to === "/"} className="nav-btn" aria-label={label}>
+                        <NavLink key={to} to={to} className="nav-btn" aria-label={label}>
                             <Icon />
                         </NavLink>
                     ))}

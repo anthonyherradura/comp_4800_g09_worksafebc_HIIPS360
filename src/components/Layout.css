@@ -20,7 +20,7 @@
     height: 65px;
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: space-between;
     flex-shrink: 0;
     padding: 0 16px;
 }
@@ -77,4 +77,31 @@
     outline-offset: 2px;
     border-radius: 6px;
     opacity: 1;
+}
+.signout-btn {
+    min-height: 44px;
+    padding: 0 8px;
+    border: none;
+    background: none;
+    color: var(--wsbc-black);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.signout-btn:focus-visible,
+.logo-link:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.logo-link {
+    text-decoration: none;
+}
+
+/* Public pages can be longer than the screen */
+.page-scroll {
+    overflow-y: auto;
 }

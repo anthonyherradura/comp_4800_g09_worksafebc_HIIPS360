@@ -1,0 +1,100 @@
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-label {
+    font-weight: 700;
+    color: var(--wsbc-bodycopy);
+}
+
+.field-hint {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--wsbc-bodycopy);
+}
+
+.field-control {
+    display: flex;
+    align-items: stretch;
+}
+
+.field-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--wsbc-warm-grey);
+    border-radius: 0;
+    background: var(--wsbc-white);
+    color: var(--wsbc-bodycopy);
+    font: inherit;
+    font-size: 1rem;
+}
+
+.field-input:focus-visible {
+    outline: 3px solid var(--wsbc-orange);
+    outline-offset: 1px;
+}
+
+.field-input[aria-invalid="true"] {
+    border: 2px solid var(--wsbc-huckleberry-red);
+}
+
+.field-toggle {
+    min-width: 64px;
+    border: 1px solid var(--wsbc-warm-grey);
+    border-left: none;
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-bodycopy);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.field-toggle:focus-visible {
+    outline: 3px solid var(--wsbc-orange);
+    outline-offset: 1px;
+}
+
+.field-error {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--wsbc-huckleberry-red);
+}
+
+/* Error from the server (or mock), shown above the form */
+.form-error {
+    margin: 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--wsbc-huckleberry-red);
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-bodycopy);
+}
+
+.auth-submit {
+    min-height: 48px;
+    width: 100%;
+}
+
+.auth-submit:disabled {
+    cursor: progress;
+    opacity: 0.75;
+}
+
+.auth-switch {
+    margin: 0;
+    text-align: center;
+}
+
+.auth-switch a {
+    font-weight: 700;
+}
