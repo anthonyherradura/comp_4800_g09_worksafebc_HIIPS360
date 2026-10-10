@@ -2,8 +2,13 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// The API (server/) runs separately; proxying /api keeps the browser on one origin, so no CORS
+const apiProxy = { '/api': 'http://localhost:3001' }
+
 // https://vite.dev/config/
 export default defineConfig({
+  server: { proxy: apiProxy },
+  preview: { proxy: apiProxy },
   plugins: [
     react(),
     VitePWA({
@@ -27,6 +32,8 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // Never answer API calls with the app shell
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],
