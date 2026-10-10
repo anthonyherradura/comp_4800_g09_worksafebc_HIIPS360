@@ -1,103 +1,244 @@
-.landing {
-    gap: 28px;
+/* The hero runs edge to edge, so sections handle their own padding.
+   Doubled class so this beats .content, which is defined in a stylesheet that loads later */
+.content.landing {
+    flex: 1 0 auto;
+    gap: 0;
+    padding: 0;
 }
 
-.prototype-notice {
-    margin: 0;
-    padding: 12px 14px;
-    border-left: 4px solid var(--wsbc-sunrise-yellow);
-    background: var(--wsbc-pale-sunrise-yellow);
-    color: var(--wsbc-bodycopy);
-    font-size: 0.9375rem;
+/* Keeps line length readable when the page is opened on a wide screen */
+.landing-inner {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
 }
 
+/* Hero */
 .landing-hero {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    padding: 32px 22px 36px;
+    background: var(--wsbc-iron-grey);
+    border-bottom: 4px solid var(--wsbc-orange);
+    color: var(--wsbc-white);
+}
+
+.landing-eyebrow {
+    margin: 0 0 12px;
+    color: var(--wsbc-steel-grey);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    text-transform: uppercase;
 }
 
 .landing-title {
     margin: 0;
-    color: var(--wsbc-bodycopy);
-    line-height: 1.2;
+    color: var(--wsbc-white);
+    font-size: clamp(var(--fs-h1), 7vw, 2.25rem);
+    line-height: 1.15;
+    text-wrap: balance;
+}
+
+/* Orange on iron grey is 3.9:1, which passes AA only because the H1 is large text */
+.landing-title-accent {
+    color: var(--wsbc-orange);
 }
 
 .landing-lead {
-    margin: 0;
+    margin: 16px 0 0;
+    color: var(--wsbc-ash-grey);
     font-size: 1.0625rem;
+    line-height: 1.55;
+}
+
+/* Body */
+.landing-body {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 24px 22px 40px;
+}
+
+.prototype-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--wsbc-sunrise-yellow);
+    border-radius: 0 4px 4px 0;
+    background: var(--wsbc-pale-sunrise-yellow);
+    color: var(--wsbc-bodycopy);
+    font-size: 0.9375rem;
     line-height: 1.5;
 }
 
+.prototype-notice-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+}
+
+.prototype-notice-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Actions */
 .landing-actions {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 8px;
 }
 
 .landing-btn {
     min-height: 48px;
     width: 100%;
+    font-size: 1.0625rem;
     text-decoration: none;
+    touch-action: manipulation;
+    transition:
+        background-color 150ms ease-out,
+        filter 150ms ease-out;
 }
 
-.landing-btn:focus-visible {
+/* The shared button colours fail AA (white on orange is 2.4:1, orange on white 2.5:1),
+   so this page swaps in passing pairs without touching the global tokens */
+.landing .btn-orange {
+    color: var(--wsbc-black);
+}
+
+.landing .btn-outline-orange {
+    background: var(--wsbc-white);
+    border-color: var(--wsbc-bodycopy);
+    color: var(--wsbc-bodycopy);
+}
+
+.landing .btn-outline-orange:hover {
+    background: var(--wsbc-ash-grey);
+    filter: none;
+}
+
+.landing-btn:active {
+    filter: brightness(0.85);
+}
+
+.landing .btn-outline-orange:active {
+    background: var(--wsbc-silver-grey);
+    filter: none;
+}
+
+.landing-btn:focus-visible,
+.landing-alt a:focus-visible {
     outline: 3px solid var(--wsbc-black);
     outline-offset: 2px;
 }
 
 .install-help {
     margin: 0;
-    padding: 12px 14px;
+    padding: 14px 16px;
+    border-radius: 4px;
     background: var(--wsbc-ash-grey);
+    line-height: 1.5;
 }
 
 .install-help-title {
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     font-weight: 700;
 }
 
-.install-help ol {
+.install-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     margin: 0;
-    padding-left: 1.25rem;
+    padding-left: 1.4rem;
+}
+
+.install-steps li::marker {
+    font-weight: 700;
 }
 
 .landing-alt {
-    margin: 0;
+    margin: 4px 0 0;
     text-align: center;
 }
 
+/* Padding makes the inline link a full-size touch target */
 .landing-alt a {
+    display: inline-block;
+    padding: 12px 4px;
     font-weight: 700;
 }
 
-/* Orange H2s fail contrast on white, so headings here use body copy colour */
+/* Benefits */
+/* Orange H2s fail contrast on white, so the heading uses body copy colour with an orange rule */
 .landing-subtitle {
-    margin: 0 0 12px;
+    margin: 0 0 16px;
     color: var(--wsbc-bodycopy);
 }
 
+.landing-subtitle::after {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin-top: 8px;
+    background: var(--wsbc-orange);
+}
+
 .benefits {
-    margin: 0;
-    padding: 0;
-    list-style: none;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .benefit {
-    padding: 14px 16px;
-    border-left: 4px solid var(--wsbc-orange);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--wsbc-silver-grey);
+    border-radius: 4px;
     background: var(--wsbc-ash-grey);
 }
 
+.benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border-radius: 4px;
+    background: var(--wsbc-orange);
+    color: var(--wsbc-black);
+}
+
+.benefit-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 .benefit-title {
-    margin: 0 0 4px;
+    margin: 2px 0 4px;
+    color: var(--wsbc-bodycopy);
 }
 
 .benefit-text {
     margin: 0;
     line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .landing-btn {
+        transition: none;
+    }
 }
