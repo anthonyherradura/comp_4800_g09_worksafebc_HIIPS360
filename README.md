@@ -12,14 +12,16 @@ An officer support/guidance tool.
 3. [A walk through a site visit](#a-walk-through-a-site-visit)
 4. [How it fits with the inspection report](#how-it-fits-with-the-inspection-report)
 5. [Scope: MVP and what comes later](#scope-mvp-and-what-comes-later)
-6. [Who it is for](#who-it-is-for)
-7. [Design principles](#design-principles)
-8. [Technical overview](#technical-overview)
-9. [Getting started](#getting-started)
-10. [Content and ownership](#content-and-ownership)
-11. [How we will know whether it worked](#how-we-will-know-whether-it-worked)
-12. [Risks and known limitations](#risks-and-known-limitations)
-13. [Project documents](#project-documents)
+6. [Project status](#project-status)
+7. [Who it is for](#who-it-is-for)
+8. [Design principles](#design-principles)
+9. [Technical overview](#technical-overview)
+10. [Getting started](#getting-started)
+11. [Working on the code](#working-on-the-code)
+12. [Content and ownership](#content-and-ownership)
+13. [How we will know whether it worked](#how-we-will-know-whether-it-worked)
+14. [Risks and known limitations](#risks-and-known-limitations)
+15. [Project documents](#project-documents)
 
 ---
 
@@ -99,11 +101,13 @@ The MVP is the smallest version worth using. It runs from arrival to leaving the
 
 **First release (MVP)**
 
-- [x] Identify the work from a photo taken on site, and confirm or change the sheet offered
-- [x] Show the hazards for that work, including those that cross in from other parts of the regulation
-- [x] Show the controls expected for each hazard, and the regulation that governs it
-- [x] Attach one or more photos to a hazard, or mark it not applicable
-- [x] Review the summary before leaving the site
+- Identify the work from a photo taken on site, and confirm or change the sheet offered
+- Show the hazards for that work, including those that cross in from other parts of the regulation
+- Show the controls expected for each hazard, and the regulation that governs it
+- Attach one or more photos to a hazard, or mark it not applicable
+- Review the summary before leaving the site
+
+See [Project status](#project-status) for how much of this is built.
 
 **Left for later**
 
@@ -112,6 +116,34 @@ The MVP is the smallest version worth using. It runs from arrival to leaving the
 - Employer conversation features: plain-language explanations of requirements, showing the employer a photo, and pointing to where a requirement is published
 
 Each is useful, and none is needed to prove the concept holds.
+
+## Project status
+
+The app shell, sign-in and offline install are in place. The inspection flow itself (sheets, hazards, controls, regulation, photos, summary) is not built yet.
+
+**Built so far**
+
+| Area | What exists |
+|---|---|
+| App shell | Vite + React 19 app with an orange header, a sign-out button and a bottom icon nav (Home, Dashboard, Planning, Hazard, Summary). The layout is fluid rather than fixed-size. |
+| Landing page (`/`) | Says plainly that this is a prototype, lists what the tool does, and offers to install the app. iOS gets "Add to Home Screen" help instead of an install button. |
+| Sign-in | Register (`/register`) and sign-in (`/login`) pages backed by a real API. Every app route requires a signed-in user. |
+| Auth API | Express 5 + Mongoose in `server/`: register, log in, log out and "who am I". Passwords are bcrypt hashes, failed sign-ins are rate-limited, and sessions are an httpOnly cookie stored in MongoDB. |
+| Offline | Installable PWA with a service worker. The last signed-in user is cached on the device, so an officer with no signal stays signed in. |
+| Design tokens | WorkSafeBC colours and type as CSS custom properties in `src/styles/tokens.css`. |
+
+**Still to build**
+
+| Page or piece | State |
+|---|---|
+| Home (`/home`) | Page component exists but is empty |
+| Planning (`/planning`) | Page component exists, placeholder text only |
+| Dashboard, Hazard, Summary | Inline placeholder in `src/App.jsx` |
+| HIIPS content (sheets, hazards, controls, regulations) | Not modelled yet; no seed data |
+| Photo matching | Not started |
+| On-device inspection storage (Dexie/IndexedDB) | Not installed |
+| `wsbc.css` / Bootstrap | Not installed; styling uses the local tokens for now |
+| Automated tests | No test runner yet |
 
 ## Who it is for
 
@@ -130,16 +162,60 @@ Each is useful, and none is needed to prove the concept holds.
 
 ## Technical overview
 
-> Section below describes the intended prototype approach. Adjust it to match what the team actually builds.
+| Layer | Choice | Status | Why |
+|---|---|---|---|
+| Front end | React 19 + Vite, `react-router-dom` v7, plain JSX (no TypeScript) | Built | Component-based UI, and the design system's classes work with React (`react-bootstrap` or plain markup) |
+| Install and offline shell | `vite-plugin-pwa` (Workbox service worker, web manifest) | Built | Officers add it to their home screen and it opens with no signal |
+| API | Express 5 + Mongoose (ESM) in `server/` | Built, auth only | Holds accounts and sessions today; will hold the HIIPS content and receive synced inspections |
+| Database | MongoDB 8.0, run locally per developer | Built, auth only | No online account needed. Atlas would only mean a different `MONGODB_URI` |
+| On-device storage | Dexie.js (IndexedDB) | Planned | Inspection state and photos are saved locally first, so the tool keeps working with no signal |
+| Styling | `src/styles/tokens.css` now; `wsbc.css` (Bootstrap 5.3 plus the WorkSafeBC layer) planned | Partial | Keeps the prototype visually and behaviourally consistent with WorkSafeBC applications |
 
-| Layer | Choice | Why |
+### Project structure
+
+```
+server/
+  index.js            Connects to MongoDB and starts the API
+  app.js              Middleware, session, JSON error handler
+  config.js           Reads and checks .env
+  models/User.js      User model (name, email, bcrypt password hash)
+  routes/auth.js      /api/auth: register, login, logout, me
+src/
+  App.jsx             Every route, nested under the public and signed-in layouts
+  components/
+    Layout.jsx        Signed-in shell: header, <Outlet/>, bottom nav (NAV_ITEMS)
+    PublicLayout.jsx  Header only, for the landing, login and register pages
+    RequireAuth.jsx   Sends signed-out users to /login
+    FormField.jsx     Labelled input with error message
+  auth/
+    authService.js    The only file that calls /api/auth
+    AuthProvider.jsx  Session state; useAuth.js reads it
+    validation.js     Form rules shared by the browser and the server
+  pages/<Name>/       <Name>.jsx + <Name>.css, one folder per page
+  pwa/useInstallPrompt.js
+  styles/
+    tokens.css        WorkSafeBC design tokens (--wsbc-*, --font-*, --fs-*)
+    forms.css         Shared form styles
+```
+
+### Auth API
+
+All routes are under `/api/auth`. Errors are always `{ error }` with a message that is safe to show the officer.
+
+| Request | Body | Response |
 |---|---|---|
-| Front end | React | Component-based UI, and the design system's classes work with React (`react-bootstrap` or plain markup) |
-| On-device storage | Dexie.js (IndexedDB) | Inspection state and photos are saved locally first, so the tool keeps working with no signal |
-| Content and sync | MongoDB behind a small API | Holds the structured HIIPS content and receives synced inspections when a connection is available |
-| Styling | `wsbc.css` (Bootstrap 5.3 plus the WorkSafeBC layer) | Keeps the prototype visually and behaviourally consistent with WorkSafeBC applications |
+| `POST /register` | `{ name, email, password }` | `201 { user }`, or `409` if the email is taken |
+| `POST /login` | `{ email, password }` | `200 { user }`, or `401` |
+| `POST /logout` | | `204` |
+| `GET /me` | | `200 { user }`, or `401` |
 
-### Data flow
+`user` is `{ name, email }`. Sessions are an httpOnly cookie (`hiips360.sid`) stored in the `sessions` collection, and the session id is regenerated on every sign-in. Failed register and sign-in attempts are limited to 20 per 15 minutes. Passwords are capped at 72 characters because bcrypt ignores anything longer.
+
+In development, Vite proxies `/api` to `localhost:3001`, so the browser only ever talks to one origin and no CORS setup is needed. The service worker never answers `/api` requests with the app shell.
+
+### Data flow (planned)
+
+The diagram shows the intended inspection flow. Only the MongoDB side exists so far, and it holds accounts, not HIIPS content.
 
 ```
  Site photo ─▶ Work matcher ─▶ Suggested sheet ─▶ Officer confirms / changes
@@ -155,7 +231,7 @@ Each is useful, and none is needed to prove the concept holds.
                                               Inspection summary
 ```
 
-### Core data (illustrative)
+### Core data (illustrative, not built yet)
 
 **Sheet content** (read-mostly, synced down to the device)
 
@@ -183,36 +259,85 @@ All hazard, control, and regulation content comes from the existing HIIPS sheets
 Built against the [WorkSafeBC UX/UI Design System](https://ux-static.online.dv.worksafebc.com/) (`wsbc.css` and Font Awesome 4.7).
 
 - **Templates:** use one of the three provided (fixed, fluid or mixed). A mobile-first inspection flow will lean on the MobileSafe component set (action and tab bars, sliding cards, half and full modals, collapse lists, snackbars).
-- **Typography and colour:** Halis headings with Verdana body text, and the warm grey palette. Do not change fonts or colours.
+- **Typography and colour:** Halis headings with Noto Sans or Verdana body text, and the warm grey palette. Do not change fonts or colours. In code, use the variables in `src/styles/tokens.css` rather than hard-coded colours.
 - **Buttons:** one primary per page, secondary buttons outlined, sentence-case action labels.
 - **Feedback:** the autosave snackbar for save confirmation, and alerts at the top of the page with the alert icon.
-- **Accessibility:** target WCAG 2.1 AA. Note that some default palette pairings (for example white text on the standard blue button, and orange H2 text on white) fall short of AA contrast, so review these with the UX team before release.
+- **Accessibility:** target WCAG 2.1 AA. Some default palette pairings fall short of AA contrast, for example white text on the standard blue button, white on orange, and orange text on white. The landing page uses black on orange (8.3:1) and a body-copy outline button (10.4:1) instead. Review these pairings with the UX team before release.
+- **Touch targets:** at least 44px, and press feedback respects reduced motion.
 
 ## Getting started
 
-> These commands are a template. Replace them with the real repository details.
+Everything runs locally. No MongoDB Atlas account or other online service is needed, and each developer has their own database. [AUTH_BACKEND_SETUP.md](AUTH_BACKEND_SETUP.md) has the step-by-step version, including what the terminal should print and a full troubleshooting table.
+
+**Prerequisites**
+
+- Node.js 22.12 or newer
+- MongoDB Community Server 8.0, installed as the Windows service `MongoDB`
+- A modern mobile or desktop browser
 
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
-cd hiips360
+git clone https://github.com/anthonyherradura/comp_4800_g09_worksafebc_HIIPS360.git
+cd comp_4800_g09_worksafebc_HIIPS360
 
 # 2. Install dependencies
 npm install
 
-# 3. Configure environment
-cp .env.example .env        # set API base URL and any keys
+# 3. Make sure MongoDB is running (admin PowerShell, once)
+#    Start-Service MongoDB
 
-# 4. Load sample HIIPS content
-npm run seed                # loads the sample sheets into the content store
+# 4. Configure environment, then set SESSION_SECRET in .env
+cp .env.example .env
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# 5. Start the app
-npm run dev
+# 5. Start the API and the app together
+npm run dev:all
 ```
 
-**Prerequisites:** Node.js (current LTS), a modern mobile or desktop browser with IndexedDB, and access to the sample HIIPS sheets to build against.
+Open http://localhost:5173 and choose **Create an account**.
 
-**Try the demo scenario:** Start a new inspection, choose (or photograph) a residential framing site, accept the suggested sheet, open the ladder hazard, attach a photo, mark confined space not applicable, then open the summary.
+**Scripts**
+
+| Command | Runs |
+|---|---|
+| `npm run dev:all` | API and Vite together (normal use) |
+| `npm run dev` | Vite dev server only; proxies `/api` to `localhost:3001` |
+| `npm run dev:api` | API only, restarts when `server/` changes |
+| `npm run api` | API only, no restart on change |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Serves the build (also proxies `/api`). Use this to test install and offline behaviour |
+| `npm run lint` | ESLint |
+
+There is no `npm run seed` or test runner yet.
+
+**Environment (`.env`)**
+
+| Variable | Value |
+|---|---|
+| `MONGODB_URI` | `mongodb://127.0.0.1:27017/hiips360`. Use `127.0.0.1`, not `localhost`: Node tries IPv6 first and the Windows MongoDB only listens on IPv4. |
+| `SESSION_SECRET` | A random 64-character hex string, different for each developer. |
+| `PORT` | `3001`. `vite.config.js` proxies `/api` here. |
+
+`.env` is git-ignored. Never commit it, and don't share your secret.
+
+**Common problems**
+
+| You see | Fix |
+|---|---|
+| `http proxy error ... ECONNREFUSED` in Vite, or a 502 | The API isn't running, or was still connecting. Use `npm run dev:all`. |
+| `Could not connect to MongoDB` | Check `Get-Service MongoDB`; start it from an admin PowerShell. |
+| Still signed in after stopping the API | Intended. The device remembers the last signed-in user for offline use. |
+
+**Demo scenario (once the inspection flow is built):** Start a new inspection, choose (or photograph) a residential framing site, accept the suggested sheet, open the ladder hazard, attach a photo, mark confined space not applicable, then open the summary.
+
+## Working on the code
+
+- **Adding a page.** Create `src/pages/<Name>/<Name>.jsx` and `<Name>.css`, with `<div className="content">` as the root element. Add its route in `src/App.jsx`. If it belongs in the bottom nav, add an entry and an inline SVG icon to `NAV_ITEMS` in `src/components/Layout.jsx`. For Dashboard, Hazard and Summary, replace the `Placeholder` route in `App.jsx`.
+- **Talking to the API.** Only `src/auth/authService.js` calls `/api/auth`. It returns `{ user }` or throws an Error whose message is safe to show.
+- **Validation.** `src/auth/validation.js` is imported by both the forms and the server, so keep it free of browser APIs.
+- **Match filename casing in imports.** Windows ignores case but Linux and CI don't, so `./HomePage.css` will break a build if the file is `Homepage.css`.
+- **Check `package.json` before assuming a dependency exists.** Dexie, `wsbc.css` and Bootstrap are planned but not installed.
+- **Keep the product rules in the code.** Anything the tool proposes must be editable or dismissible, sheets must be reachable without a photo, inspection state should work offline first, and the UI should say it is a prototype.
 
 ## Content and ownership
 
@@ -253,6 +378,7 @@ The prototype exists to prompt a decision, not to prove a hypothesis. Three sign
 | Product Requirements Document (V11) | Personas, the site-visit scenario, MVP scope, and user stories by capability |
 | Sample inspection report: fall protection stop-work | Example of the reasoning (observation, control, requirement) HIIPS360 supports |
 | WorkSafeBC UX/UI Design System | Components, tokens and usage rules the UI must follow |
+| [AUTH_BACKEND_SETUP.md](AUTH_BACKEND_SETUP.md) | Installing MongoDB, creating `.env`, running the API, and troubleshooting |
 
 ---
 
