@@ -8,8 +8,11 @@ import LoginPage from "./pages/Login/Login";
 import RegisterPage from "./pages/Register/Register";
 import HomePage from "./pages/Homepage/Homepage";
 import PlanningPage from "./pages/Planning/Planning";
+import { HazardProvider } from "./context/HazardContext";
+import HazardList from "./pages/Hazard/HazardList";
+import HazardAdd from "./pages/Hazard/HazardAdd";
+import HazardDetail from "./pages/Hazard/HazardDetail";
 
- 
 const Placeholder = ({ name }) => (
   <div style={{ padding: 24, fontSize: 20 }}>{name} page</div>
 );
@@ -26,18 +29,22 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
           </Route>
 
-          {/* Every route inside here needs a signed-in user and gets the header + nav bar */}
+          {/* Signed-in pages: header + nav bar, and hazard data shared across them */}
           <Route
             element={
               <RequireAuth>
-                <Layout />
+                <HazardProvider>
+                  <Layout />
+                </HazardProvider>
               </RequireAuth>
             }
           >
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
             <Route path="/planning" element={<PlanningPage />} />
-            <Route path="/hazard" element={<Placeholder name="Hazard" />} />
+            <Route path="/hazard" element={<HazardList />} />
+            <Route path="/hazard/new" element={<HazardAdd />} />
+            <Route path="/hazard/:id" element={<HazardDetail />} />
             <Route path="/summary" element={<Placeholder name="Summary" />} />
           </Route>
 
