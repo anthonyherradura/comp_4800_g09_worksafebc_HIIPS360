@@ -366,3 +366,9 @@
     font-size: 0.85rem;
     color: var(--wsbc-iron-grey);
 }
+
+/* ---------- AI send button + errors ---------- */
+.hz-send {
+    width: 100%;
+    text-transform: uppercase;
+}
