@@ -1,124 +1,160 @@
-.content {
+/* Home: job sites. Layout follows the wireframe — add bar on top, saved jobs below. */
+
+.jobs-page {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 26px 22px 20px;
-    min-height: 0;
-    overflow-y: auto;
+    padding: 26px 20px 20px;
     color: var(--wsbc-bodycopy);
 }
 
-.home-title {
-    margin: 0;
-    font-size: 1.75rem;
-    line-height: 1.2;
+.jobs-panel {
+    background: var(--wsbc-silver-grey);
 }
 
-.search {
+/* ---------- Add bar ---------- */
+.jobs-add {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
 }
 
-.search-label {
-    font-size: 1rem;
-    color: var(--wsbc-black);
-}
-
-.add-input {
-    width: 100%;
-    box-sizing: border-box;
+.jobs-input {
+    flex: 1;
     min-width: 0;
-    height: 57px;
-    border: 1px solid var(--wsbc-smoke-grey);
-    border-radius: 0;
-    background: var(--wsbc-steel-grey);
-    color: var(--wsbc-bodycopy);
+    height: 60px;
     padding: 0 14px;
+    border: none;
+    border-radius: 0;
+    background: var(--wsbc-smoke-grey);
+    color: var(--wsbc-black);
     font: inherit;
     font-size: 1.125rem;
 }
 
-.add-input::placeholder {
-    color: var(--wsbc-black);
-    opacity: 0.8;
+.jobs-input::placeholder {
+    color: var(--wsbc-iron-grey);
 }
 
-.cards {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.jobs-add-btn {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    padding: 9px;
+    border: none;
+    border-radius: 4px;
+    background: var(--wsbc-orange);
+    color: var(--wsbc-white);
+    cursor: pointer;
 }
 
-.card {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 14px 16px;
-    background: var(--wsbc-steel-grey);
-    border: 1px solid var(--wsbc-smoke-grey);
-    color: var(--wsbc-bodycopy);
-    text-decoration: none;
+.jobs-add-btn svg,
+.jobs-remove svg {
+    width: 100%;
+    height: 100%;
 }
 
-a.card:hover {
-    border-color: var(--wsbc-orange);
-}
-
-.card-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-}
-
-.card-desc {
-    font-size: 1rem;
-    color: var(--wsbc-black);
-}
-
-.card-off {
-    border-style: dashed;
+.jobs-add-btn:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.recent-heading {
-    margin: 0 0 8px;
-    font-size: 0.875rem;
-    font-weight: 600;
+/* ---------- Saved jobs ---------- */
+.jobs-list-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 28px 16px;
 }
 
-.list {
+.jobs-list {
     margin: 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 20px;
 }
 
-.list-row {
+.jobs-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    min-height: 44px;
-    box-sizing: border-box;
-    padding: 0 16px;
-    background: var(--wsbc-steel-grey);
-    border: 1px solid var(--wsbc-smoke-grey);
-    color: var(--wsbc-bodycopy);
-    text-decoration: none;
+    gap: 16px;
 }
 
-a.list-row:hover {
+.jobs-item {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 12px;
+    border: 2px solid transparent;
+    background: var(--wsbc-smoke-grey);
+    color: var(--wsbc-black);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.jobs-item:hover,
+.jobs-item.is-current {
     border-color: var(--wsbc-orange);
 }
 
-.list-meta {
-    font-size: 0.8125rem;
+.jobs-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-a:focus-visible {
-    outline: 3px solid var(--wsbc-orange);
+.jobs-meta {
+    font-size: 0.75rem;
+    color: var(--wsbc-iron-grey);
+}
+
+.jobs-remove {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: var(--wsbc-orange);
+    cursor: pointer;
+}
+
+.jobs-empty {
+    margin: auto 0;
+    text-align: center;
+    color: var(--wsbc-iron-grey);
+}
+
+/* ---------- Accessibility ---------- */
+.jobs-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.jobs-input:focus-visible,
+.jobs-add-btn:focus-visible,
+.jobs-item:focus-visible,
+.jobs-remove:focus-visible {
+    outline: 3px solid var(--wsbc-black);
     outline-offset: 2px;
 }

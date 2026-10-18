@@ -1,82 +1,103 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { formatOpened, getLastOpened, recordOpened } from "../../data/recentSheets";
+import { useNavigate } from "react-router-dom";
+import { useJobs } from "../../context/JobContext";
+import { formatOpened } from "../../data/recentSheets";
 import "./Homepage.css";
 
-// Placeholder sheets. Swap in real sheet ids and titles later.
-const SHEETS = [
-    { id: "sheet-001", name: "Scaffolding" },
-    { id: "sheet-002", name: "Ladders" },
-];
+// Where an officer goes after creating or picking a job.
+const JOB_START_ROUTE = "/planning";
+
+const PlusIcon = () => (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4v16M4 12h16" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+);
+
+const CloseIcon = () => (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+);
 
 export default function HomePage() {
-    const [query, setQuery] = useState("");
-    const [opened] = useState(getLastOpened);
+    const { jobs, currentJob, addJob, openJob, deleteJob } = useJobs();
+    const [label, setLabel] = useState("");
     const navigate = useNavigate();
 
-    // Most recently opened first. Sheets never opened stay at the bottom.
-    const recent = [...SHEETS].sort((a, b) =>
-        (opened[b.id] || "").localeCompare(opened[a.id] || "")
-    );
-
-    function handleSearch(e) {
+    function handleAdd(e) {
         e.preventDefault();
-        const q = query.trim();
-        navigate(q ? `/hazard?q=${encodeURIComponent(q)}` : "/hazard");
+        if (!addJob(label)) return;
+        setLabel("");
+        navigate(JOB_START_ROUTE);
+    }
+
+    function handleOpen(id) {
+        openJob(id);
+        navigate(JOB_START_ROUTE);
+    }
+
+    function handleDelete(job) {
+        if (window.confirm(`Remove "${job.label}" from your job sites?`)) deleteJob(job.id);
     }
 
     return (
-        <div className="content">
-            <h1 className="home-title">What work are you inspecting?</h1>
-
-            <form className="search" onSubmit={handleSearch}>
-                <label className="search-label" htmlFor="home-query">
-                    Describe what you see, search a sheet or regulation
+        <div className="jobs-page">
+            <form className="jobs-panel jobs-add" onSubmit={handleAdd}>
+                <label className="jobs-visually-hidden" htmlFor="job-label">
+                    Job site name or address
                 </label>
                 <input
-                    id="home-query"
-                    className="add-input"
-                    type="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Construction, scaffolding, PBE, etc."
+                    id="job-label"
+                    className="jobs-input"
+                    type="text"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="Job site name or address"
+                    autoComplete="off"
+                    enterKeyHint="done"
                 />
+                <button
+                    type="submit"
+                    className="jobs-add-btn"
+                    aria-label="Create job"
+                    disabled={!label.trim()}
+                >
+                    <PlusIcon />
+                </button>
             </form>
 
-            <div className="cards">
-                <div className="card card-off" aria-disabled="true">
-                    <span className="card-title">Find a protocol sheet</span>
-                    <span className="card-desc">By work type or classification unit</span>
-                </div>
+            <section className="jobs-panel jobs-list-panel" aria-labelledby="jobs-heading">
+                <h2 id="jobs-heading" className="jobs-visually-hidden">Your job sites</h2>
 
-                <Link className="card" to="/hazard">
-                    <span className="card-title">Identify work from a photo</span>
-                    <span className="card-desc">Take a photo on arrival and confirm the work type</span>
-                </Link>
-
-                <div className="card card-off" aria-disabled="true">
-                    <span className="card-title">Search the regulation</span>
-                    <span className="card-desc">Act, OHS Regulation, policies and guidelines together</span>
-                </div>
-            </div>
-
-            <section aria-labelledby="recent-heading">
-                <h2 id="recent-heading" className="recent-heading">Recent</h2>
-                <ul className="list">
-                    {recent.map((item) => (
-                        <li key={item.id}>
-                            <Link
-                                className="list-row"
-                                to={`/hazard/${item.id}`}
-                                state={{ name: item.name }}
-                                onClick={() => recordOpened(item.id)}
-                            >
-                                <span>{item.name}</span>
-                                <span className="list-meta">{formatOpened(opened[item.id])}</span>
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
+                {jobs.length === 0 ? (
+                    <p className="jobs-empty">
+                        No job sites yet. Enter a site name or address above and tap + to create one.
+                    </p>
+                ) : (
+                    <ul className="jobs-list">
+                        {jobs.map((job) => (
+                            <li className="jobs-row" key={job.id}>
+                                <button
+                                    type="button"
+                                    className={`jobs-item${job.id === currentJob?.id ? " is-current" : ""}`}
+                                    onClick={() => handleOpen(job.id)}
+                                    aria-current={job.id === currentJob?.id ? "true" : undefined}
+                                >
+                                    <span className="jobs-label">{job.label}</span>
+                                    <span className="jobs-meta">{formatOpened(job.lastOpenedAt)}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="jobs-remove"
+                                    onClick={() => handleDelete(job)}
+                                    aria-label={`Remove ${job.label}`}
+                                >
+                                    <CloseIcon />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </section>
         </div>
     );
