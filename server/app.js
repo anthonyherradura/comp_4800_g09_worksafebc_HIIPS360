@@ -4,6 +4,8 @@ import { MongoStore } from "connect-mongo";
 import mongoose from "mongoose";
 import config from "./config.js";
 import authRoutes from "./routes/auth.js";
+import aiRoutes from "./routes/ai.js";
+
 
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days: officers are often offline at sites
 
@@ -38,6 +40,7 @@ export function createApp() {
         res.json({ ok: true, db: mongoose.connection.readyState === 1 ? "connected" : "disconnected" });
     });
     app.use("/api/auth", authRoutes);
+    app.use("/api/ai", aiRoutes);
 
     app.use("/api", (req, res) => {
         res.status(404).json({ error: "Not found." });
