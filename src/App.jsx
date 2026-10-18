@@ -7,6 +7,7 @@ import LandingPage from "./pages/Landing/Landing";
 import LoginPage from "./pages/Login/Login";
 import RegisterPage from "./pages/Register/Register";
 import HomePage from "./pages/Homepage/Homepage";
+import JobsPage from "./pages/Jobs/Jobs";
 import PlanningPage from "./pages/Planning/Planning";
 import { HazardProvider } from "./context/HazardContext";
 import { JobProvider } from "./context/JobContext";
@@ -42,6 +43,7 @@ export default function App() {
               </RequireAuth>
             }
           >
+            <Route path="/jobs" element={<JobsPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
             <Route path="/planning" element={<PlanningPage />} />

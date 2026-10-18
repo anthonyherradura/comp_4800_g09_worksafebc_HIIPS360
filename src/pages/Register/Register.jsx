@@ -16,7 +16,7 @@ export default function RegisterPage() {
     const [formError, setFormError] = useState("");
     const [pending, setPending] = useState(false);
 
-    if (user) return <Navigate to="/home" replace />;
+    if (user) return <Navigate to="/jobs" replace />;
 
     const handleChange = (event) => {
         const next = { ...values, [event.target.name]: event.target.value };
@@ -36,7 +36,7 @@ export default function RegisterPage() {
         try {
             const { name, email, password } = values;
             await register({ name, email, password });
-            navigate("/home", { replace: true });
+            navigate("/jobs", { replace: true });
         } catch (error) {
             setFormError(error.message);
             setPending(false);
