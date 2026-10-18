@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useJobs } from "../../context/JobContext";
 import { formatOpened, getLastOpened, recordOpened } from "../../data/recentSheets";
 import "./Homepage.css";
 
@@ -13,6 +14,7 @@ export default function HomePage() {
     const [query, setQuery] = useState("");
     const [opened] = useState(getLastOpened);
     const navigate = useNavigate();
+    const { currentJob } = useJobs();
 
     // Most recently opened first. Sheets never opened stay at the bottom.
     const recent = [...SHEETS].sort((a, b) =>
@@ -27,6 +29,13 @@ export default function HomePage() {
 
     return (
         <div className="content">
+            {currentJob && (
+                <p className="home-job">
+                    <span>Job: <strong>{currentJob.label}</strong></span>
+                    <Link to="/jobs">Change</Link>
+                </p>
+            )}
+
             <h1 className="home-title">What work are you inspecting?</h1>
 
             <form className="search" onSubmit={handleSearch}>

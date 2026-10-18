@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../auth/useAuth";
 import "../styles/tokens.css";
 import "./Layout.css";
@@ -44,7 +44,8 @@ const SummaryIcon = () => (
 
 
 const NAV_ITEMS = [
-    { to: "/home", label: "Home", Icon: HomeIcon },
+    // Home starts at the job list; protocol selection (/home) is part of the same step
+    { to: "/jobs", label: "Home", Icon: HomeIcon, also: ["/home"] },
     { to: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
     { to: "/planning", label: "Planning", Icon: PlanningIcon },
     { to: "/hazard", label: "Hazard", Icon: HazardIcon },
@@ -54,6 +55,7 @@ const NAV_ITEMS = [
 export default function Layout() {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     const handleSignOut = async () => {
         await logout();
@@ -79,8 +81,15 @@ export default function Layout() {
                 </main>
 
                 <nav className="nav" aria-label="Main navigation">
-                    {NAV_ITEMS.map(({ to, label, Icon }) => (
-                        <NavLink key={to} to={to} className="nav-btn" aria-label={label}>
+                    {NAV_ITEMS.map(({ to, label, Icon, also = [] }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            aria-label={label}
+                            className={({ isActive }) =>
+                                isActive || also.includes(pathname) ? "nav-btn active" : "nav-btn"
+                            }
+                        >
                             <Icon />
                         </NavLink>
                     ))}

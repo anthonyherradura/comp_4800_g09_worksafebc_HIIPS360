@@ -7,8 +7,10 @@ import LandingPage from "./pages/Landing/Landing";
 import LoginPage from "./pages/Login/Login";
 import RegisterPage from "./pages/Register/Register";
 import HomePage from "./pages/Homepage/Homepage";
+import JobsPage from "./pages/Jobs/Jobs";
 import PlanningPage from "./pages/Planning/Planning";
 import { HazardProvider } from "./context/HazardContext";
+import { JobProvider } from "./context/JobContext";
 import HazardList from "./pages/Hazard/HazardList";
 import HazardAdd from "./pages/Hazard/HazardAdd";
 import HazardDetail from "./pages/Hazard/HazardDetail";
@@ -29,16 +31,19 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
           </Route>
 
-          {/* Signed-in pages: header + nav bar, and hazard data shared across them */}
+          {/* Signed-in pages: header + nav bar, and job/hazard data shared across them */}
           <Route
             element={
               <RequireAuth>
-                <HazardProvider>
-                  <Layout />
-                </HazardProvider>
+                <JobProvider>
+                  <HazardProvider>
+                    <Layout />
+                  </HazardProvider>
+                </JobProvider>
               </RequireAuth>
             }
           >
+            <Route path="/jobs" element={<JobsPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
             <Route path="/planning" element={<PlanningPage />} />

@@ -97,7 +97,7 @@ export default function LandingPage() {
     const { canInstall, promptInstall, isInstalled, isIOS } = useInstallPrompt();
 
     // Opened from the home screen icon: skip the pitch and go to the app
-    if (isInstalled) return <Navigate to="/home" replace />;
+    if (isInstalled) return <Navigate to="/jobs" replace />;
 
     return (
         <div className="content landing">

@@ -17,7 +17,7 @@ export default function LoginPage() {
     const [pending, setPending] = useState(false);
 
     // Send the officer back to the page they were trying to open
-    const redirectTo = location.state?.from?.pathname ?? "/home";
+    const redirectTo = location.state?.from?.pathname ?? "/jobs";
 
     if (user) return <Navigate to={redirectTo} replace />;
 
