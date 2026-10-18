@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
+import { STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
 import { CameraPlusIcon, BackIcon } from "./HazardIcons";
 import "./Hazard.css";
 
@@ -57,6 +58,9 @@ export default function HazardDetail() {
                     <div className="hz-divider" />
 
                     <div className="hz-name hz-name--solo">{hazard.name}</div>
+                    <p className="hz-status-line" role="status">
+                        Status: {STATUS_LABEL[getHazardStatus(hazard)]}
+                    </p>
 
                     <div className="hz-chips">
                         <span className="hz-chip"></span>
@@ -95,6 +99,15 @@ export default function HazardDetail() {
                             )}
                         </div>
                     </div>
+
+                    <button
+                        type="button"
+                        className="btn hz-na-toggle"
+                        aria-pressed={hazard.notApplicable}
+                        onClick={() => updateHazard(id, { notApplicable: !hazard.notApplicable })}
+                    >
+                        {hazard.notApplicable ? "Mark as applicable" : "Mark not applicable"}
+                    </button>
 
                     <button type="button" className="btn hz-delete" onClick={handleDelete}>
                         Delete

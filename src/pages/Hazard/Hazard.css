@@ -331,6 +331,27 @@
     color: var(--wsbc-silver-grey);
 }
 
+.hz-status-line {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--wsbc-bodycopy);
+}
+
+/* Orange text on steel grey fails contrast, so the toggle sits on ash grey */
+.hz-na-toggle {
+    flex-shrink: 0;
+    min-height: 48px;
+    background: var(--wsbc-ash-grey);
+    border-color: var(--wsbc-iron-grey);
+    color: var(--wsbc-iron-grey);
+}
+
+.hz-na-toggle[aria-pressed="true"] {
+    background: var(--wsbc-iron-grey);
+    color: var(--wsbc-white);
+}
+
 .hz-delete {
     flex-shrink: 0;
     background: var(--wsbc-huckleberry-red);
@@ -345,6 +366,7 @@
 .hz-info:focus-visible,
 .hz-back:focus-visible,
 .hz-add:focus-visible,
+.hz-na-toggle:focus-visible,
 .hz-input:focus-visible,
 .hz-textarea:focus-visible {
     outline: 3px solid var(--wsbc-black);

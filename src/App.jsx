@@ -14,6 +14,7 @@ import { JobProvider } from "./context/JobContext";
 import HazardList from "./pages/Hazard/HazardList";
 import HazardAdd from "./pages/Hazard/HazardAdd";
 import HazardDetail from "./pages/Hazard/HazardDetail";
+import SummaryPage from "./pages/Summary/Summary";
 
 const Placeholder = ({ name }) => (
   <div style={{ padding: 24, fontSize: 20 }}>{name} page</div>
@@ -50,7 +51,7 @@ export default function App() {
             <Route path="/hazard" element={<HazardList />} />
             <Route path="/hazard/new" element={<HazardAdd />} />
             <Route path="/hazard/:id" element={<HazardDetail />} />
-            <Route path="/summary" element={<Placeholder name="Summary" />} />
+            <Route path="/summary" element={<SummaryPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

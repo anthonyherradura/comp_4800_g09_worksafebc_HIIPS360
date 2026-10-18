@@ -19,6 +19,7 @@ export function HazardProvider({ children }) {
                 name,
                 comment: "",
                 photos: photo ? [photo] : [],
+                notApplicable: false,
                 createdAt: new Date().toISOString(),
             },
         ]);

@@ -1,0 +1,178 @@
+/* Summary page – uses WorkSafeBC tokens from styles/tokens.css.
+   .content (page padding and scroll) comes from Homepage.css. */
+
+.sm-title {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.2;
+}
+
+.sm-note {
+    margin: -12px 0 0;
+    font-size: 0.875rem;
+    color: var(--wsbc-bodycopy);
+}
+
+.sm-empty {
+    margin: 0;
+    padding: 24px 16px;
+    text-align: center;
+    background: var(--wsbc-ash-grey);
+}
+
+/* ---------- Counts strip ---------- */
+.sm-counts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 0;
+}
+
+.sm-count {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 4px;
+    background: var(--wsbc-ash-grey);
+    border-top: 4px solid var(--wsbc-smoke-grey);
+    text-align: center;
+}
+
+.sm-count dt {
+    font-size: 0.8125rem;
+    line-height: 1.2;
+}
+
+.sm-count dd {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--wsbc-iron-grey);
+}
+
+.sm-count--unaddressed {
+    border-top-color: var(--wsbc-sunset-orange);
+}
+
+.sm-count--reviewed {
+    border-top-color: var(--wsbc-moss-green);
+}
+
+.sm-progress {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* ---------- Sections ---------- */
+.sm-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Overrides the orange h2 default, which fails contrast on white */
+.sm-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--wsbc-bodycopy);
+}
+
+.sm-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sm-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 4px 0;
+    background: var(--wsbc-ash-grey);
+    border-left: 6px solid var(--wsbc-smoke-grey);
+}
+
+.sm-section--unaddressed .sm-row {
+    border-left-color: var(--wsbc-sunset-orange);
+}
+
+.sm-section--reviewed .sm-row {
+    border-left-color: var(--wsbc-moss-green);
+}
+
+.sm-link {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4px 12px;
+    color: var(--wsbc-bodycopy);
+    text-decoration: none;
+}
+
+.sm-name {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.sm-meta {
+    font-size: 0.8125rem;
+}
+
+.sm-link:hover .sm-name {
+    text-decoration: underline;
+}
+
+.sm-row-action {
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 0.4rem 0.8rem;
+    background: var(--wsbc-white);
+    border-color: var(--wsbc-iron-grey);
+    color: var(--wsbc-iron-grey);
+    font-size: 0.875rem;
+}
+
+/* ---------- Footer ---------- */
+.sm-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.sm-primary {
+    width: 100%;
+    min-height: 48px;
+    text-decoration: none;
+}
+
+.sm-hint {
+    margin: 0;
+    font-size: 0.8125rem;
+    text-align: center;
+}
+
+.sm-hint--result {
+    padding: 8px 12px;
+    background: var(--wsbc-iron-grey);
+    color: var(--wsbc-white);
+    font-weight: 700;
+}
+
+/* ---------- Focus ---------- */
+.sm-link:focus-visible,
+.sm-row-action:focus-visible,
+.sm-primary:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+}
