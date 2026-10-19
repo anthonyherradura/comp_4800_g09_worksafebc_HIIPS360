@@ -125,11 +125,11 @@ The app shell, sign-in and offline install are in place. The inspection flow its
 
 | Area | What exists |
 |---|---|
-| App shell | Vite + React 19 app with an orange header, a sign-out button and a bottom icon nav (Home, Dashboard, Planning, Hazard, Summary). The layout is fluid rather than fixed-size. |
+| App shell | Vite + React 19 app with an orange header, a sign-out button and a bottom icon nav (Home, Planning, Hazard, Summary). The layout is fluid rather than fixed-size. |
 | Landing page (`/`) | Says plainly that this is a prototype, lists what the tool does, and offers to install the app. iOS gets "Add to Home Screen" help instead of an install button. |
 | Sign-in | Register (`/register`) and sign-in (`/login`) pages backed by a real API. Every app route requires a signed-in user. |
 | Auth API | Express 5 + Mongoose in `server/`: register, log in, log out and "who am I". Passwords are bcrypt hashes, failed sign-ins are rate-limited, and sessions are an httpOnly cookie stored in MongoDB. |
-| Offline | Installable PWA with a service worker. The last signed-in user is cached on the device, so an officer with no signal stays signed in. |
+| Install | Installable PWA with a service worker. The last signed-in user is cached on the device, so an officer with no signal stays signed in. |
 | Design tokens | WorkSafeBC colours and type as CSS custom properties in `src/styles/tokens.css`. |
 
 **Still to build**
@@ -138,10 +138,10 @@ The app shell, sign-in and offline install are in place. The inspection flow its
 |---|---|
 | Home (`/home`) | Page component exists but is empty |
 | Planning (`/planning`) | Page component exists, placeholder text only |
-| Dashboard, Hazard, Summary | Inline placeholder in `src/App.jsx` |
 | HIIPS content (sheets, hazards, controls, regulations) | Not modelled yet; no seed data |
 | Photo matching | Not started |
-| On-device inspection storage (Dexie/IndexedDB) | Not installed |
+| Saving inspections (hazards, photos, job sites) in MongoDB | Not built. Hazards are in memory and job sites are in localStorage |
+| On-device inspection storage (Dexie/IndexedDB) | Deferred; see [Design principles](#design-principles) |
 | `wsbc.css` / Bootstrap | Not installed; styling uses the local tokens for now |
 | Automated tests | No test runner yet |
 
@@ -156,7 +156,7 @@ The app shell, sign-in and offline install are in place. The inspection flow its
 - **Suggestion, not decision.** Every result can be confirmed, edited or set aside by the officer.
 - **Reachable without the photo.** Identifying work from a photograph is the least certain part of the technology, so the guidance must be reachable by browsing the sheet library even when photo matching fails.
 - **The site is the context.** Detail stays out of the way until the officer opens a hazard, and the officer should never be searching while standing in front of the work.
-- **Works where the work is.** Field sites have poor or no connectivity. The prototype stores inspection state locally first and treats any network as optional.
+- **Works where the work is (deferred).** Field sites have poor or no connectivity, so a production tool would store inspection state on the device first and treat the network as optional. The team has deferred this for the prototype: inspections are saved to MongoDB through the API, and device-first storage and sync come later.
 - **Follows the WorkSafeBC design system.** See [UI and design system](#ui-and-design-system).
 - **Says what it is.** The prototype states plainly, at every showing, that it is a prototype and not a product.
 
@@ -166,9 +166,9 @@ The app shell, sign-in and offline install are in place. The inspection flow its
 |---|---|---|---|
 | Front end | React 19 + Vite, `react-router-dom` v7, plain JSX (no TypeScript) | Built | Component-based UI, and the design system's classes work with React (`react-bootstrap` or plain markup) |
 | Install and offline shell | `vite-plugin-pwa` (Workbox service worker, web manifest) | Built | Officers add it to their home screen and it opens with no signal |
-| API | Express 5 + Mongoose (ESM) in `server/` | Built, auth only | Holds accounts and sessions today; will hold the HIIPS content and receive synced inspections |
+| API | Express 5 + Mongoose (ESM) in `server/` | Built, auth only | Holds accounts and sessions today; will hold the HIIPS content and the officer's inspections |
 | Database | MongoDB 8.0, run locally per developer | Built, auth only | No online account needed. Atlas would only mean a different `MONGODB_URI` |
-| On-device storage | Dexie.js (IndexedDB) | Planned | Inspection state and photos are saved locally first, so the tool keeps working with no signal |
+| On-device storage | Dexie.js (IndexedDB) | Deferred | Would let the tool keep working with no signal. Not a priority for the prototype |
 | Styling | `src/styles/tokens.css` now; `wsbc.css` (Bootstrap 5.3 plus the WorkSafeBC layer) planned | Partial | Keeps the prototype visually and behaviourally consistent with WorkSafeBC applications |
 
 ### Project structure
@@ -215,13 +215,13 @@ In development, Vite proxies `/api` to `localhost:3001`, so the browser only eve
 
 ### Data flow (planned)
 
-The diagram shows the intended inspection flow. Only the MongoDB side exists so far, and it holds accounts, not HIIPS content.
+The diagram shows the intended inspection flow. Only the MongoDB side exists so far, and it holds accounts, not HIIPS content. The app reads and saves through the API; on-device storage and sync are deferred.
 
 ```
  Site photo ─▶ Work matcher ─▶ Suggested sheet ─▶ Officer confirms / changes
                                                         │
                                                         ▼
-  HIIPS content (MongoDB) ◀── sync when online ──▶ Dexie (on device)
+            HIIPS content and inspections (MongoDB, via /api)
                                                         │
                         Hazard list ─▶ Hazard detail ─▶ Regulation text
                                                         │
@@ -233,19 +233,16 @@ The diagram shows the intended inspection flow. Only the MongoDB side exists so 
 
 ### Core data (illustrative, not built yet)
 
-**Sheet content** (read-mostly, synced down to the device)
+**MongoDB collections** (illustrative)
 
-```js
-// Dexie store definition (illustrative)
-db.version(1).stores({
-  sheets:      'id, classificationUnit, workType',
-  hazards:     'id, sheetId, name',          // includes cross-over hazards
-  controls:    'id, hazardId, order',        // order = hierarchy of controls
-  regulations: 'id, citation',               // e.g. "OHS 11.2(1)(a)"
-  inspections: 'id, sheetId, status, updatedAt',
-  hazardRecords: '[inspectionId+hazardId], inspectionId, state',
-  photos:      'id, inspectionId, hazardId'
-});
+```
+sheets         id, classificationUnit, workType
+hazards        id, sheetId, name              includes cross-over hazards
+controls       id, hazardId, order            order = hierarchy of controls
+regulations    id, citation                   e.g. "OHS 11.2(1)(a)"
+inspections    id, userId, jobId, sheetId, updatedAt
+hazardRecords  inspectionId + hazardId, state, officerAdded
+photos         id, inspectionId, hazardId
 ```
 
 **Per-hazard state** on an inspection is one of: *not yet addressed*, *reviewed with evidence attached*, or *not applicable to this site*. The summary is a view over these states, and any hazard still "not yet addressed" is listed so nothing is left behind.
@@ -332,12 +329,12 @@ There is no `npm run seed` or test runner yet.
 
 ## Working on the code
 
-- **Adding a page.** Create `src/pages/<Name>/<Name>.jsx` and `<Name>.css`, with `<div className="content">` as the root element. Add its route in `src/App.jsx`. If it belongs in the bottom nav, add an entry and an inline SVG icon to `NAV_ITEMS` in `src/components/Layout.jsx`. For Dashboard, Hazard and Summary, replace the `Placeholder` route in `App.jsx`.
+- **Adding a page.** Create `src/pages/<Name>/<Name>.jsx` and `<Name>.css`, with `<div className="content">` as the root element. Add its route in `src/App.jsx`. If it belongs in the bottom nav, add an entry and an inline SVG icon to `NAV_ITEMS` in `src/components/Layout.jsx`.
 - **Talking to the API.** Only `src/auth/authService.js` calls `/api/auth`. It returns `{ user }` or throws an Error whose message is safe to show.
 - **Validation.** `src/auth/validation.js` is imported by both the forms and the server, so keep it free of browser APIs.
 - **Match filename casing in imports.** Windows ignores case but Linux and CI don't, so `./HomePage.css` will break a build if the file is `Homepage.css`.
-- **Check `package.json` before assuming a dependency exists.** Dexie, `wsbc.css` and Bootstrap are planned but not installed.
-- **Keep the product rules in the code.** Anything the tool proposes must be editable or dismissible, sheets must be reachable without a photo, inspection state should work offline first, and the UI should say it is a prototype.
+- **Check `package.json` before assuming a dependency exists.** `wsbc.css` and Bootstrap are planned but not installed; Dexie is deferred.
+- **Keep the product rules in the code.** Anything the tool proposes must be editable or dismissible, sheets must be reachable without a photo, and the UI should say it is a prototype. Save inspection data through the API to MongoDB; offline first is deferred.
 
 ## Content and ownership
 
