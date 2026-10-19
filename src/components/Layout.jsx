@@ -9,15 +9,6 @@ const HomeIcon = () => (
     </svg>
 );
 
-const DashboardIcon = () => (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="2.5" y="3.5" width="19" height="17" rx="1.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
-        <rect x="2.5" y="3.5" width="19" height="4" fill="currentColor" />
-        <rect x="5.5" y="10.5" width="5" height="6" fill="currentColor" />
-        <path d="M13 11h6M13 14h6M13 17h6" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-);
-
 const PlanningIcon = () => (
     <svg viewBox="0 0 24 24" aria-hidden="true">
         <rect x="4" y="4" width="16" height="18" rx="2.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
@@ -46,7 +37,6 @@ const SummaryIcon = () => (
 const NAV_ITEMS = [
     // Home starts at the job list; protocol selection (/home) is part of the same step
     { to: "/jobs", label: "Home", Icon: HomeIcon, also: ["/home"] },
-    { to: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
     { to: "/planning", label: "Planning", Icon: PlanningIcon },
     { to: "/hazard", label: "Hazard", Icon: HazardIcon },
     { to: "/summary", label: "Summary", Icon: SummaryIcon },

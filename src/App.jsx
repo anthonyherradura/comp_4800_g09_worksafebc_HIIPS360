@@ -46,7 +46,6 @@ export default function App() {
           >
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/home" element={<HomePage />} />
-            <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
             <Route path="/planning" element={<PlanningPage />} />
             <Route path="/hazard" element={<HazardList />} />
             <Route path="/hazard/new" element={<HazardAdd />} />
