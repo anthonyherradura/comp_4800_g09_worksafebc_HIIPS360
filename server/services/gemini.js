@@ -3,8 +3,16 @@ import { GoogleGenAI } from "@google/genai";
 
 // Override in .env with GEMINI_MODEL if this name is retired: https://ai.google.dev/gemini-api/docs/models
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
-// Tried once when MODEL fails (outage, quota, retired name). Set GEMINI_FALLBACK_MODEL= (empty) to turn off.
-const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash-lite";
+// Raced against MODEL when it is slow or fails (outage, quota, retired name). Set GEMINI_FALLBACK_MODEL= (empty) to turn off.
+const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash";
+
+// The answer is a few words, so skip the model's thinking step (cuts ~4 s to ~1-2 s).
+// Both models must support the "minimal" level (Gemini 3.5 / 3.6 Flash do; 3.7+ don't).
+const THINKING = { thinkingLevel: "minimal" };
+// If MODEL hasn't answered by then, start FALLBACK_MODEL too and take whichever answers first
+const HEDGE_AFTER_MS = 2500;
+// Give up on everything after this, so the officer never waits on a hung request
+const TIMEOUT_MS = 8000;
 
 const SYSTEM_INSTRUCTION = `You are a workplace health and safety assistant for WorkSafeBC site officers in British Columbia, Canada.
 From the photo and/or the officer's description, identify the single most significant workplace hazard.
@@ -25,20 +33,63 @@ export async function suggestHazard({ text, photo }) {
     if (photo) parts.push({ inlineData: { mimeType: photo.mimetype, data: photo.buffer.toString("base64") } });
     parts.push({ text: text ? `Site officer's description: ${text}` : "Identify the main hazard in this photo." });
 
-    try {
-        return await askModel(MODEL, parts);
-    } catch (err) {
-        if (!FALLBACK_MODEL || FALLBACK_MODEL === MODEL) throw err;
-        console.warn(`Gemini model ${MODEL} failed, trying ${FALLBACK_MODEL}:`, err.message);
-        return askModel(FALLBACK_MODEL, parts);
-    }
+    getClient(); // fail fast on a missing key instead of trying both models
+    const models = [MODEL, FALLBACK_MODEL].filter((m, i, all) => m && all.indexOf(m) === i);
+    return firstAnswer(models, parts);
 }
 
-async function askModel(model, parts) {
+// Starts models[0]; starts the next one when the current one fails or HEDGE_AFTER_MS passes.
+// Resolves with the first answer and cancels the rest; rejects once every model has failed.
+function firstAnswer(models, parts) {
+    return new Promise((resolve, reject) => {
+        const controllers = [];
+        let next = 0;
+        let pending = 0;
+        let done = false;
+        let hedgeTimer;
+
+        const finish = (settle, value) => {
+            if (done) return;
+            done = true;
+            clearTimeout(hedgeTimer);
+            clearTimeout(deadline);
+            controllers.forEach((c) => c.abort());
+            settle(value);
+        };
+        const deadline = setTimeout(
+            () => finish(reject, new Error(`No answer from Gemini within ${TIMEOUT_MS / 1000} s`)),
+            TIMEOUT_MS
+        );
+
+        const start = () => {
+            clearTimeout(hedgeTimer);
+            if (done || next >= models.length) return;
+            const model = models[next++];
+            const controller = new AbortController();
+            controllers.push(controller);
+            pending++;
+            if (next < models.length) hedgeTimer = setTimeout(start, HEDGE_AFTER_MS);
+
+            askModel(model, parts, controller.signal).then(
+                (answer) => finish(resolve, answer),
+                (err) => {
+                    pending--;
+                    if (done) return;
+                    console.warn(`Gemini model ${model} failed:`, err.message.slice(0, 300));
+                    if (next < models.length) start();
+                    else if (pending === 0) finish(reject, err);
+                }
+            );
+        };
+        start();
+    });
+}
+
+async function askModel(model, parts, abortSignal) {
     const response = await getClient().models.generateContent({
         model,
         contents: parts,
-        config: { systemInstruction: SYSTEM_INSTRUCTION },
+        config: { systemInstruction: SYSTEM_INSTRUCTION, thinkingConfig: THINKING, abortSignal },
     });
 
     const answer = (response.text ?? "").trim().replace(/^["'\s]+|["'.\s]+$/g, "");
