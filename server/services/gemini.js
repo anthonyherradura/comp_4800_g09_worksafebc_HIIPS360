@@ -3,6 +3,8 @@ import { GoogleGenAI } from "@google/genai";
 
 // Override in .env with GEMINI_MODEL if this name is retired: https://ai.google.dev/gemini-api/docs/models
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+// Tried once when MODEL fails (outage, quota, retired name). Set GEMINI_FALLBACK_MODEL= (empty) to turn off.
+const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash-lite";
 
 const SYSTEM_INSTRUCTION = `You are a workplace health and safety assistant for WorkSafeBC site officers in British Columbia, Canada.
 From the photo and/or the officer's description, identify the single most significant workplace hazard.
@@ -23,13 +25,23 @@ export async function suggestHazard({ text, photo }) {
     if (photo) parts.push({ inlineData: { mimeType: photo.mimetype, data: photo.buffer.toString("base64") } });
     parts.push({ text: text ? `Site officer's description: ${text}` : "Identify the main hazard in this photo." });
 
+    try {
+        return await askModel(MODEL, parts);
+    } catch (err) {
+        if (!FALLBACK_MODEL || FALLBACK_MODEL === MODEL) throw err;
+        console.warn(`Gemini model ${MODEL} failed, trying ${FALLBACK_MODEL}:`, err.message);
+        return askModel(FALLBACK_MODEL, parts);
+    }
+}
+
+async function askModel(model, parts) {
     const response = await getClient().models.generateContent({
-        model: MODEL,
+        model,
         contents: parts,
         config: { systemInstruction: SYSTEM_INSTRUCTION },
     });
 
     const answer = (response.text ?? "").trim().replace(/^["'\s]+|["'.\s]+$/g, "");
-    if (!answer) throw new Error("Empty response from Gemini");
+    if (!answer) throw new Error(`Empty response from Gemini (${model})`);
     return answer.slice(0, 120);
 }
