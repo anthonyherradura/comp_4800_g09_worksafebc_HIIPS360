@@ -1,0 +1,983 @@
+{
+  "sheetId": "cu-732044",
+  "title": "Log Transport (CU 732044)",
+  "issued": "2020-05-28",
+  "copyright": "© 2021, Workers’ Compensation Board of British Columbia. All rights reserved.",
+  "source": "HI_CU732044LogTransport.pdf",
+  "chunks": [
+    {
+      "id": "cu-732044-001",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Description of Work",
+      "heading": "Description of Work",
+      "text": "The Log Transport classification unit involves the transportation of logs from the cut–block to a log dump, dry land sort or secondary processing facility such as a mill by way of a logging truck. The following sections provide a description of the work that occurs.",
+      "page": 4,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-002",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Planning",
+      "heading": "Planning",
+      "text": "During the planning phase, employers are responsible for ensuring truck drivers are adequately trained and have the appropriate credentials (e.g., air brake ticket, class 1, etc.). Employers are also responsible for ensuring that drivers receive orientation on the following topics:\n• Weather conditions  Prime contractors and sub–contractors must ensure that, prior to arriving on site, all truck drivers are aware of the site specific wet weather shut down thresholds (water balance as determined by rain gauge readings)  This includes how and when the site will be shut down, who will communicate this information, and how it will be communicated\n• Road use hazards, additional traffic and flow of traffic\n• Location and grade of steep haul roads\n• Ensuring hauling direction is suitable to existing road design\n• Workplace rules and regulations for log landings, dry land sorts and mill yards\n• Pick up/drop off locations",
+      "page": 4,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-003",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Site Prep",
+      "heading": "Site Prep",
+      "text": "Truck drivers are responsible for inspecting logging truck equipment daily including communication systems prior to the use or travel on a resource road(new requirement of 26.65 requires daily inspection of the cab guards and mounting system). Employers are also responsible for identifying all steep haul roads and ensuring risk assessments are conducted by a qualified person and ensuring the log truck drivers have been informed of the location and the hazards of the steep haul roads and the information, recommendations and instruction from the risk assessment (see OHSR 26.2 Guideline), and ensuring they have a qualified man check system and making themselves aware of the forest fire control plans.",
+      "page": 4,
+      "regulations": [
+        "OHSR 26.2"
+      ]
+    },
+    {
+      "id": "cu-732044-004",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Loading Logs",
+      "heading": "Loading Logs",
+      "text": "If the logging truck is a conventional logging truck, meaning no self-loading capabilities, then the logs are loaded onto the truck by a log loader. If the logging truck is self-loading log truck then the truck driver in most cases loads the logs onto the truck. The hazards and controls depend then on the method of log loading.",
+      "page": 5,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-005",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Transporting",
+      "heading": "Transporting",
+      "text": "Transporting the logs occurs in a variety of weather conditions, road type and grade (steepness of road) all of which affect the hazards and controls used.",
+      "page": 5,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-006",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Unloading",
+      "heading": "Unloading",
+      "text": "As with log loading unloading can occur using a log loader if it is a conventional logging truck or by the truck driver if the truck is a self-loader. The hazards and controls depend then on the method used to unload the logs.",
+      "page": 5,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-007",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Reloading Trailer",
+      "heading": "Reloading Trailer",
+      "text": "Reloading of the trailer onto the truck can occur via a number of ways (log transporter trailer hoists, mobile equipment, pre-load logging trucks). This depends on the unique operating characteristics of the worksite.",
+      "page": 5,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-008",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Truck Maintenance",
+      "heading": "Truck Maintenance",
+      "text": "This section includes the regular maintenance of truck body, cab guards and tires while following proper lockout procedures for truck maintenance and proper procedures for tire servicing.",
+      "page": 5,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-009",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Legislation",
+      "heading": "Legislation",
+      "text": "The following sections of the OHSR capture the primary activities included in the Log Transport classification unit:\n• OHSR Section 26.2, Planning and conducting a forestry operation\n• WCA Sections 21–25",
+      "page": 5,
+      "regulations": [
+        "OHSR 26.2",
+        "WCA 21–25"
+      ]
+    },
+    {
+      "id": "cu-732044-010",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Driver Orientation",
+      "text": "Hazard: • Inadequate orientation could result in driver not having clear instructions on truck configuration and workplace safety\nControl: • Drivers are required to have a site specific orientation\nLegislation: WCA Section 21, General duties of employers OHSR Section 3.23, Young or new worker orientation and training OHSR Section 26.2, Planning and conducting a forestry operation OHSR Section 26.5, Initial safety meeting",
+      "page": 6,
+      "regulations": [
+        "OHSR 26.2",
+        "OHSR 26.5",
+        "OHSR 3.23",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-011",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Driver Orientation",
+      "text": "Hazard: • Inappropriate or non–use of seatbelt\nControl: • Drivers are required by regulation and the law to wear seatbelts at all times\nLegislation: OHSR Section 16.32, Provision OHSR Section 16.33, Use Motor Vehicle Act",
+      "page": 6,
+      "regulations": [
+        "OHSR 16.32",
+        "OHSR 16.33"
+      ]
+    },
+    {
+      "id": "cu-732044-012",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Inspection of truck equipment",
+      "text": "Hazard: • Unprepared for the work or upset condition\nControl: • Pre–trip inspections\nLegislation: OHSR Section 4.3, Safe machinery and equipment OHSR Section 16.34, Start of shift inspection OHSR Section 26.71.2, Daily log WCA Section 21, General duties of employers",
+      "page": 6,
+      "regulations": [
+        "OHSR 16.34",
+        "OHSR 26.71.2",
+        "OHSR 4.3",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-013",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Inspection of truck equipment",
+      "text": "Hazard: • Truck backing up without alerting people in the vicinity\nControl: • Truck is equipped with a backup alarm and backup lights\nLegislation: OHSR Section 16.8, Warning signal device – backup alarm OHSR Section 16.9, Lights",
+      "page": 6,
+      "regulations": [
+        "OHSR 16.8",
+        "OHSR 16.9"
+      ]
+    },
+    {
+      "id": "cu-732044-014",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Inspection of truck equipment",
+      "text": "Hazard: • In the truck, the operator does not have clear vision\nControl: • Windshields, side and rear windows, and rear–vision mirrors must be maintained\nLegislation: OHSR Section 16.12, Maintenance",
+      "page": 7,
+      "regulations": [
+        "OHSR 16.12"
+      ]
+    },
+    {
+      "id": "cu-732044-015",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Inspection of truck equipment",
+      "text": "Hazard: • Not maintaining a secure operators cab\n• In the event of a collision or rollover drivers can be struck by loose tools or equipment\nControl: • Maintain clean and secure cab\nLegislation: OHSR Section 16.35, Securing tools and equipment OHSR Section 17.5, Securing equipment",
+      "page": 7,
+      "regulations": [
+        "OHSR 16.35",
+        "OHSR 17.5"
+      ]
+    },
+    {
+      "id": "cu-732044-016",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Inspection of truck equipment",
+      "text": "Hazard: • Welding grab hooks on cinches\n• This practice can fatigue and weaken the cinch\n• Operators can be struck by the cinch when they break\nControl: • Do not weld on cinches\n• There are now manufactured cinches with grab hooks installed\nLegislation: OHSR Section 4.3(1)(i), Safe machinery and equipment",
+      "page": 7,
+      "regulations": [
+        "OHSR 4.3(1)(i)"
+      ]
+    },
+    {
+      "id": "cu-732044-017",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Communication",
+      "text": "Hazard: • Truck is not equipped with the correct radio and/or radio channels for the roads being accessed\nControl: • Ensuring radios are functioning (radio check)\n• Ensuring radio channels are correct for the roads being accessed (radio check)\nLegislation: OHSR Section 26.2, Planning and conducting a forestry operation",
+      "page": 7,
+      "regulations": [
+        "OHSR 26.2"
+      ]
+    },
+    {
+      "id": "cu-732044-018",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Identifying steep haul roads",
+      "text": "Hazard: • Not identifying locations of potential hazards for drivers\nControl: • Employers expected to be knowledgeable of all known hazards of the road system\nLegislation: WCA Section 25, General duties of owners WCA Section 21, General duties of employers WCA Section 24, Coordination of multiple- employer workplaces OHSR Section 26.2, Planning and conducting a forestry operation",
+      "page": 8,
+      "regulations": [
+        "OHSR 26.2",
+        "WCA 21",
+        "WCA 24",
+        "WCA 25"
+      ]
+    },
+    {
+      "id": "cu-732044-019",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Person check system",
+      "text": "Hazard: • Workers working alone\nControl: • Develop person check system that will ensure drivers well being\nLegislation: OHSR Section 4.20.2, Hazard identification, elimination and control OHSR Section 4.21, Procedures for checking well-being of worker",
+      "page": 8,
+      "regulations": [
+        "OHSR 4.20.2",
+        "OHSR 4.21"
+      ]
+    },
+    {
+      "id": "cu-732044-020",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Site Prep – Forest fire awareness and preparedness",
+      "text": "Hazard: • Unprepared workers in the event of a forest fire\nControl: • Ensure workers are trained in the S100 training\nLegislation: OHSR Section 26.3.1, Forestry operation fire fighting",
+      "page": 8,
+      "regulations": [
+        "OHSR 26.3.1"
+      ]
+    },
+    {
+      "id": "cu-732044-021",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Self Loading Logging Trucks",
+      "text": "Hazard: • Drivers working alone and they in equipment that is unguarded\nControl: • Person check system\n• Safe work procedures (guarding)\n• Safe guards on the loading equipment (boom deflectors, etc.)\nLegislation: OHSR Section 4.21, Procedures for checking well-being of worker WCA Section 21, General duties of employers OHSR Section 26.13.1(1), Equipment operator protections OHSR Section 26.13.1(2), Equipment operator protections",
+      "page": 8,
+      "regulations": [
+        "OHSR 26.13.1(1)",
+        "OHSR 26.13.1(2)",
+        "OHSR 4.21",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-022",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Self Loading Logging Trucks",
+      "text": "Control: • Log deck piles should be safe for the self-loading operators (i.e., should not exceed the height of the operators feet)\nLegislation: OHSR Section 26.2, Planning and conducting a forestry operation",
+      "page": 9,
+      "regulations": [
+        "OHSR 26.2"
+      ]
+    },
+    {
+      "id": "cu-732044-023",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Self Loading Logging Trucks",
+      "text": "Hazard: • Maintenance within self loaders often done at heights over 10 feet (log loader)\nControl: • Fall protection\n• Lockout procedures\nLegislation: Safe work procedures WCA Section 21, General duties of employers",
+      "page": 9,
+      "regulations": [
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-024",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Self Loading Logging Trucks",
+      "text": "Hazard: • Loss of stability of the tractor\nControl: • Ensuring outriggers are placed as per manufacturer’s instructions and that they are well maintained and safe for use\nLegislation: OHSR Section 4.3, Safe machinery and equipment",
+      "page": 9,
+      "regulations": [
+        "OHSR 4.3"
+      ]
+    },
+    {
+      "id": "cu-732044-025",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Exposure to mobile equipment\nControl: • Driver orientation to the hazards of the landing\nLegislation: OHSR Section 26.5, Initial safety meeting",
+      "page": 9,
+      "regulations": [
+        "OHSR 26.5"
+      ]
+    },
+    {
+      "id": "cu-732044-026",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Operator’s position during loading single or multiple bunks\nControl: • Operator must not stand on the cab platform, or between the cab and a log being loaded\nLegislation: OHSR Section 26.67, Load specifications",
+      "page": 9,
+      "regulations": [
+        "OHSR 26.67"
+      ]
+    },
+    {
+      "id": "cu-732044-027",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Suspended logs being passed over the driver and/or the driver’s cab\nControl: • Safe work procedures and safe landing procedures\nLegislation: WCA Section 21, General duties of employers OHSR Section 26.59, Suspended logs",
+      "page": 9,
+      "regulations": [
+        "OHSR 26.59",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-028",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Operator climbing on bunks to raise or lower stakes\nControl: • Operator must not go on bunks and trailer assemblies\n• If the operator must go on a bunk, they must be provided with a safe means to do so (i.e. a non-slip stationary work platform 20” wide, and the means for three points for contact)\nLegislation: OHSR Section 26.66(4.1), Bunks and stakes OHSR Section 26.66(4.2), Bunks and stakes",
+      "page": 10,
+      "regulations": [
+        "OHSR 26.66(4.1)",
+        "OHSR 26.66(4.2)"
+      ]
+    },
+    {
+      "id": "cu-732044-029",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Exposure to unstable logs on the load while attempting to secure the load with binders\nControl: • Proper loading procedures and properly built loads (i.e. loads must be stable without the use of binders)\n• Ensure safe work procedures are in place (as a number of recent injuries have occurred during this work process)\n• The logs of the bottom tier and side rows must exceed beyond the front and rear bunks and stakes, according to the regulation\nLegislation: OHSR Section 26.67, Load specifications",
+      "page": 10,
+      "regulations": [
+        "OHSR 26.67"
+      ]
+    },
+    {
+      "id": "cu-732044-030",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Significant MSI injuries from the application of binders without mechanical assistance (drivers throwing the binders over the load)\nControl: • Unless it is not possible, use equipment or an alternate means of throwing the binder or pulling the binder over the load (using a ball and strawline rope)\nLegislation: OHSR Section 26.68, Binders Safe work procedures OHSR Section 4.47, Risk identification OHSR Section 4.48, Risk assessment OHSR Section 4.51, Education and training OHSR Section 4.52, Evaluation",
+      "page": 11,
+      "regulations": [
+        "OHSR 26.68",
+        "OHSR 4.47",
+        "OHSR 4.48",
+        "OHSR 4.51",
+        "OHSR 4.52"
+      ]
+    },
+    {
+      "id": "cu-732044-031",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Temporary transport without binders (short duration to hammer)\nControl: • Binders being applied to the load prior to leaving the landing and or the loader\nLegislation: OHSR Section 26.68, Binders",
+      "page": 11,
+      "regulations": [
+        "OHSR 26.68"
+      ]
+    },
+    {
+      "id": "cu-732044-032",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Loading – Conventional Logging Trucks",
+      "text": "Hazard: • Lack of communication between the truck driver and the loader operator\nControl: • Proper signaling as per regulation and/or two way radio communication\nLegislation: OHSR Section 26.67(1), Load specifications",
+      "page": 11,
+      "regulations": [
+        "OHSR 26.67(1)"
+      ]
+    },
+    {
+      "id": "cu-732044-033",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to physical impairment (hours of work)\nControl: • Supervision\n• Hours of work regulated for drivers by Provincial Legislation\n• Log books required\nLegislation: WCA Section 23, General duties of supervisors OHSR Section 4.19, Physical or mental impairment OHSR Section 26.71.2",
+      "page": 11,
+      "regulations": [
+        "OHSR 26.71.2",
+        "OHSR 4.19",
+        "WCA 23"
+      ]
+    },
+    {
+      "id": "cu-732044-034",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to substance abuse\nControl: • Supervision\n• Worker responsibility\nLegislation: WCA Section 23, General duties of supervisors WCA Section 22, General duties of workers OHSR Section 4.20, Impairment by alcohol, drug or other substance",
+      "page": 12,
+      "regulations": [
+        "OHSR 4.20",
+        "WCA 22",
+        "WCA 23"
+      ]
+    },
+    {
+      "id": "cu-732044-035",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to speed\nControl: • Supervision\n• Worker responsibility\n• Motor Vehicle Act\n• Forestry Act\nLegislation: WCA Section 23, General duties of supervisors WCA Section 22, General duties of workers OHSR Section 4.20, Impairment by alcohol, drug or other substance No Jurisdiction No jurisdiction",
+      "page": 12,
+      "regulations": [
+        "OHSR 4.20",
+        "WCA 22",
+        "WCA 23"
+      ]
+    },
+    {
+      "id": "cu-732044-036",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to weather\nControl: • Supervision\n• Worker responsibility to use proper equipment (i.e. chains)\nLegislation: WCA Section 23, General duties of supervisors OHSR Section 26.2, Planning and conducting a forestry operation WCA Section 22, General duties of workers",
+      "page": 12,
+      "regulations": [
+        "OHSR 26.2",
+        "WCA 22",
+        "WCA 23"
+      ]
+    },
+    {
+      "id": "cu-732044-037",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to steep haul roads\nControl: • Employer required to conduct site specific risk assessments for steep haul roads\n• Refer to OHSR 26.2 Guideline for further information\nLegislation: OHSR Section 26.2, Planning and conducting a forestry operation",
+      "page": 13,
+      "regulations": [
+        "OHSR 26.2"
+      ]
+    },
+    {
+      "id": "cu-732044-038",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Loss of control due to mechanical failure\nControl: • Pre-trip inspections and timely maintenance and brake checks as required for the road\nLegislation: OHSR Section 3.5, General requirement OHSR Section 3.9, Remedy without delay OHSR Section 4.3, Safe machinery and equipment",
+      "page": 13,
+      "regulations": [
+        "OHSR 3.5",
+        "OHSR 3.9",
+        "OHSR 4.3"
+      ]
+    },
+    {
+      "id": "cu-732044-039",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Logs or chunks of logs sliding or rolling off the side of a log transporter while in transit\nControl: • Ensuring at least two binders are used to secure the logs regardless of the height of the load\nLegislation: OHSR Section 26.68(3), Binders",
+      "page": 13,
+      "regulations": [
+        "OHSR 26.68(3)"
+      ]
+    },
+    {
+      "id": "cu-732044-040",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Transporting",
+      "text": "Hazard: • Having inadequate cab guards (aluminum structure and anchor points)\n• Cab guards provide the driver with life space in the event of a collision or sudden stop and are a critical safety element for log transport\nControl: • Cab guards must meet the requirements of the regulation\n• Frequent inspections of bull board/cab guard for damage and cracking at the anchor points\n• Manufacturer’s instructions\n• P.Eng. documents to certify load rating and main supporting structure is made of steel\n• Certification by a P.Eng. that the main supporting structure is designed and constructed so that vibration and distortion generated by use cannot damage cab guard\n• If full aluminum or hybrid (blend of steel and aluminum) load rating certification for vibration and distortion required\nLegislation: OHSR 26.65, Cab guard OHS Guideline G-26.65(2)(e), Installing the cab guard on the log transporter in a manner acceptable to WorkSafeBC",
+      "page": 14,
+      "regulations": [
+        "OHSR 26.65"
+      ]
+    },
+    {
+      "id": "cu-732044-041",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Note",
+      "text": "Note: The off highway bull boards are now considered cab guards under the new regulation (definition)",
+      "page": 14,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-042",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Self Loading Logging Truck",
+      "text": "Hazard: • Drivers working alone and they are in equipment that is unguarded\n• Loss of stability of the tractor\nControl: • Person check system.\n• Safe work procedures (guarding)\n• Safe guards on the loading equipment (boom deflectors, etc.)\n• Log deck piles should be safe for the self-loading operators (i.e. should not exceed the height of the operators feet)\n• Ensuring outriggers are placed as per manufacturer’s instructions and that they are well maintained and safe for use\nLegislation: OHSR Section 4.21, Procedures for checking well-being of worker WCA Section 21, General duties of employers OHSR Section 26.13.1(1), Equipment operator protections OHSR Section 26.13.1(2), Equipment operator protections OHSR Section 26.2, Planning and conducting a forestry operation OHSR Section 4.3, Safe machinery and equipment",
+      "page": 15,
+      "regulations": [
+        "OHSR 26.13.1(1)",
+        "OHSR 26.13.1(2)",
+        "OHSR 26.2",
+        "OHSR 4.21",
+        "OHSR 4.3",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-043",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Removing binders prior to the unloading the load (binder removal stations)\nControl: • A load of logs must be restrained prior to the removal of binders\nLegislation: OHSR Section 26.69(4)(b), Binder removal",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.69(4)(b)"
+      ]
+    },
+    {
+      "id": "cu-732044-044",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Exposure to mobile equipment\nControl: • Driver orientation to the workplace safety rules of the dry land sort or mill yard\n• High visibility PPE\nLegislation: OHSR Section 26.5, Initial safety meeting OHSR Section 26.7, Highly visible clothing",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.5",
+        "OHSR 26.7"
+      ]
+    },
+    {
+      "id": "cu-732044-045",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Suspended logs being passed over the driver and/or the driver’s cab\nControl: • Safe work procedures and safe landing procedures\nLegislation: WCA Section 21, General duties of employers OHSR Section 26.59, Suspended logs",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.59",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-046",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Driver exposed to moving logs.\nControl: • Drivers must not be exposed to moving logs during unloading\nLegislation: OHSR Section 26.69(5)",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.69(5)"
+      ]
+    },
+    {
+      "id": "cu-732044-047",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Unsafe use of a binder removal station exposing drivers to unsecured loads\nControl: • Safe work procedures\n• Posted written procedures\n• Station must be certified by professional engineer\nLegislation: OHSR Section 26.69, Binder removal",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.69"
+      ]
+    },
+    {
+      "id": "cu-732044-048",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Unloading – Conventional Logging Truck",
+      "text": "Hazard: • Unsecured trailers\nControl: • Empty trailers must be secured when loaded onto tractors\nLegislation: OHSR Section 26.76, Securing trailers",
+      "page": 16,
+      "regulations": [
+        "OHSR 26.76"
+      ]
+    },
+    {
+      "id": "cu-732044-049",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Reloading Trailers",
+      "text": "Hazard: • Suspended log truck trailer falling or becoming unstable\nControl: • Safe work procedures for mobile equipment\n• Annual inspections for log transporter hoists\nLegislation: OHSR Section 26.2, Planning and conducting a forestry operation WCA Section 21, General duties of employers OHSR Section 14.14(g.1), Inspection and maintenance records",
+      "page": 17,
+      "regulations": [
+        "OHSR 14.14(g.1)",
+        "OHSR 26.2",
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-050",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Truck Maintenance",
+      "text": "Hazard: • Equipment not locked out during maintenance activities\nControl: • Employer to ensure proper lockout procedures and safe work procedures are in place for maintenance activities on logging trucks\n• Supervisors and workers to ensure lock out procedures are effective and are followed at all times\nLegislation: WCA Section 21, General duties of employers",
+      "page": 17,
+      "regulations": [
+        "WCA 21"
+      ]
+    },
+    {
+      "id": "cu-732044-051",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Hazards, Controls and Legislation",
+      "heading": "Truck Maintenance",
+      "text": "Hazard: • Tire explosions\nControl: • Following regulatory requirements for servicing multi piece rims\nLegislation: OHSR Section 16.47, Training OHSR Section 16.48, Equipment and procedures",
+      "page": 17,
+      "regulations": [
+        "OHSR 16.47",
+        "OHSR 16.48"
+      ]
+    },
+    {
+      "id": "cu-732044-052",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Load Specification",
+      "text": "OHS Regulation: OHSR Section 26.67(1.3), Load specifications\nIssue when…: • Observations of logs falling off of log trucks while in transit",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.67(1.3)"
+      ]
+    },
+    {
+      "id": "cu-732044-053",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Load Specification (log rows)",
+      "text": "OHS Regulation: OHSR Section 26.67(3)(b), Load specifications\nIssue when…: • Observation of a compensating reach type trailer where the loaded logs are less than 12 inches from the front and rear bunks and stakes",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.67(3)(b)"
+      ]
+    },
+    {
+      "id": "cu-732044-054",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Binders",
+      "text": "OHS Regulation: OHSR Section 26.68, Binders\nIssue when…: • Observations of a loaded logging truck where the load is above the stakes and being transported without binders  Note: Log transporters are required to use binders to secure all log loads on the highway whether above or below the stakes",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.68"
+      ]
+    },
+    {
+      "id": "cu-732044-055",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Binder removal",
+      "text": "OHS Regulation: OHSR Section 26.69(4), Binder removal\nIssue when…: • Observations determine a worker or driver is removing binders without the load being restrained",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.69(4)"
+      ]
+    },
+    {
+      "id": "cu-732044-056",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Daily log",
+      "text": "OHS Regulation: OHSR Section 26.71.2(2), Daily log\nIssue when…: • Observations during an inspection of a log transport driver reveal the individual does not have a daily log or has an incomplete daily log",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.71.2(2)"
+      ]
+    },
+    {
+      "id": "cu-732044-057",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Warning devices",
+      "text": "OHS Regulation: OHSR Section 26.72, Warning devices\nIssue when…: • Observations in a log landing determine that a log truck was backing into a loader with no distinct audible device",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.72"
+      ]
+    },
+    {
+      "id": "cu-732044-058",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Inadequate cab guard",
+      "text": "OHS Regulation: OHSR Section 26.65, Cab guard\nIssue when…: • No certification or not mounted properly",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.65"
+      ]
+    },
+    {
+      "id": "cu-732044-059",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Cab guard",
+      "text": "OHS Regulation: OHSR Section 26.65(1)(b), Cab guard\nIssue when…: • Observations of a log transporter where the bull board or cab guard is not as wide as the cab",
+      "page": 18,
+      "regulations": [
+        "OHSR 26.65(1)(b)"
+      ]
+    },
+    {
+      "id": "cu-732044-060",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Damaged cab guard",
+      "text": "OHS Regulation: OHSR Section 26.65.6, Cab guard\nIssue when…: • Observations of any damage to the cab guard such as, cracking/missing or broken pieces or corrosion",
+      "page": 19,
+      "regulations": [
+        "OHSR 26.65.6"
+      ]
+    },
+    {
+      "id": "cu-732044-061",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Typical Orders",
+      "heading": "Bunks and Stakes",
+      "text": "OHS Regulation: OHSR Section 26.66(7)(a), Bunks and stakes\nIssue when…: • Observations determine that stake lines are being constructed with swaged wire rope",
+      "page": 19,
+      "regulations": [
+        "OHSR 26.66(7)(a)"
+      ]
+    },
+    {
+      "id": "cu-732044-062",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Preparation",
+      "heading": "Preparation",
+      "text": "• Bring and wear all appropriate PPE.  When climbing under the truck, wear safety eyewear.\n• Ensure you have your two way radio and/or satellite phone on your person at all times.",
+      "page": 20,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-063",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Arrival",
+      "heading": "Arrival",
+      "text": "• Check in.\n• Arrange for orientation to the cut block and/or dry land sort from worker or employer rep.\n• Arrange for a worker or employer rep to accompany you during the inspection.",
+      "page": 20,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-064",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Walk through",
+      "heading": "Walk through",
+      "text": "• Obey all signage and workplace rules.\n• Never approach any logging trucks without contacting the driver.\n• Prior to a detailed inspection of a logging truck, ensure all loading activities have been stopped and the truck is shut down and secured for safe inspection.  Truck keys are in the officer’s pocket.  Wheel chocks are in place.\n• Avoid inspecting log trucks while they are being unloaded.\n• Do not conduct an inspection of a loaded logging truck unless the load is secure (i.e. binders).\n• Never approach a logging truck that is being loaded on a steep slope, always keep a safe distance.\n• Never try and overcome or flag down a logging truck (no jurisdiction to do so).\n• Never ride in a logging truck.",
+      "page": 20,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-065",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Wrap up",
+      "heading": "Wrap up",
+      "text": "• Communicate with employer/worker representative that the inspection is concluded and conduct exit meeting.\n• Check out with employer.",
+      "page": 20,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-066",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "OHS Guideline G26.2-2, Planning log hauling operations for varying road grades",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-067",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Ferric Study on Steep Slope Hauling",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-068",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "WorkSafeBC Video on Log Landing Safety for Truck Drivers",
+      "text": "Consultation/safety meeting",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-069",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Truck Safe – BC Forest Safety Council",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-070",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Log Transporter ID Chart – Terry",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-071",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Operator’s Manual and Manufacturer’s Instructions",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-072",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "U bolt video",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-073",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "FPInnovations over exertion injuries reduction",
+      "text": "Consultation/injury reduction http://teamsites/sites/ts_industries/forestry/Ac tivities/FP%20Innovations_LoadWrapper.pdf https://www.youtube.com/watch?v=Jnbh– ZVNC5U",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-074",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Truck Steep Slope Calculator – FPInnovations",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    },
+    {
+      "id": "cu-732044-075",
+      "sheetId": "cu-732044",
+      "sheetTitle": "Log Transport (CU 732044)",
+      "issued": "2020-05-28",
+      "section": "Additional Resources for Employers",
+      "heading": "Professional Log Truck Driver Competency Program – BC Forest Safety Council",
+      "text": "Consultation/inspection",
+      "page": 21,
+      "regulations": []
+    }
+  ]
+}

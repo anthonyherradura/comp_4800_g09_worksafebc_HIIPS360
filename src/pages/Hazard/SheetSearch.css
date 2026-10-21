@@ -1,0 +1,83 @@
+.ss {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--wsbc-bodycopy);
+}
+
+.ss-label {
+    font-size: 1rem;
+    color: var(--wsbc-black);
+}
+
+.ss-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 57px;
+    border: 1px solid var(--wsbc-smoke-grey);
+    border-radius: 0;
+    background: var(--wsbc-steel-grey);
+    color: var(--wsbc-bodycopy);
+    padding: 0 14px;
+    font: inherit;
+    font-size: 1.125rem;
+}
+
+.ss-input:focus-visible,
+.ss-item summary:focus-visible {
+    outline: 3px solid var(--wsbc-orange);
+    outline-offset: 2px;
+}
+
+.ss-status {
+    min-height: 1.25rem;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.ss-results {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ss-item {
+    background: var(--wsbc-steel-grey);
+    border: 1px solid var(--wsbc-smoke-grey);
+    padding: 12px 16px;
+}
+
+.ss-item summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+}
+
+.ss-heading {
+    font-weight: 600;
+    color: var(--wsbc-black);
+}
+
+.ss-meta {
+    font-size: 0.8125rem;
+}
+
+.ss-text {
+    white-space: pre-line;
+    margin: 12px 0 8px;
+}
+
+.ss-regs {
+    margin: 0 0 8px;
+    font-weight: 600;
+    color: var(--wsbc-orange);
+}
+
+.ss-notice {
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+}

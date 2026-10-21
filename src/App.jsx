@@ -15,6 +15,9 @@ import HazardList from "./pages/Hazard/HazardList";
 import HazardAdd from "./pages/Hazard/HazardAdd";
 import HazardDetail from "./pages/Hazard/HazardDetail";
 import SummaryPage from "./pages/Summary/Summary";
+import SheetsPage from "./pages/Sheets/SheetsPage"; 
+import PdfsPage from "./pages/Pdfs/PdfsPage";
+
 
 const Placeholder = ({ name }) => (
   <div style={{ padding: 24, fontSize: 20 }}>{name} page</div>
@@ -47,6 +50,9 @@ export default function App() {
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/planning" element={<PlanningPage />} />
+            <Route path="/sheets" element={<SheetsPage />} />
+            <Route path="/pdfs" element={<PdfsPage />} />
+            <Route path="/sheets/:sheetId" element={<SheetsPage />} />
             <Route path="/hazard" element={<HazardList />} />
             <Route path="/hazard/new" element={<HazardAdd />} />
             <Route path="/hazard/:id" element={<HazardDetail />} />
