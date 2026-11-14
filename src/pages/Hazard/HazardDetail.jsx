@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
-import { STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
+import { HAZARD_STATUS, STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
 import { getSheetHazard } from "../../data/sheets";
 import { BackIcon, CameraPlusIcon, CloseIcon } from "./HazardIcons";
 import "./Hazard.css";
@@ -161,18 +161,28 @@ export default function HazardDetail() {
                 <BackIcon /> Hazards
             </Link>
 
-            <header className="hd-head">
+                        <header className="hd-head">
                 {guidance?.stage && <p className="hd-kicker">{guidance.stage}</p>}
                 <h1 className="hd-name">{hazard.name}</h1>
-                <div className="hd-meta">
-                    <span className={`hd-status hd-status--${statusKey}`} role="status">
-                        {STATUS_LABEL[statusKey]}
-                    </span>
-                    <span className="hd-meta-text">
-                        {page ? `Page ${page} · ` : ""}
-                        {plural(count, "photo")}
-                    </span>
-                </div>
+                {statusKey === HAZARD_STATUS.UNADDRESSED ? (
+                    <div className="hd-callout" role="status">
+                        <p className="hd-callout-title">Unaddressed</p>
+                        <p className="hd-callout-text">
+                            Add a photo to mark it reviewed, or tap Not applicable if it doesn't apply.
+                        </p>
+                        {page && <p className="hd-callout-page">Page {page}</p>}
+                    </div>
+                ) : (
+                    <div className="hd-meta">
+                        <span className={`hd-status hd-status--${statusKey}`} role="status">
+                            {STATUS_LABEL[statusKey]}
+                        </span>
+                        <span className="hd-meta-text">
+                            {page ? `Page ${page} · ` : ""}
+                            {plural(count, "photo")}
+                        </span>
+                    </div>
+                )}
             </header>
 
             <div className="hd-tabs" role="tablist" aria-label="Hazard details">
@@ -280,4 +290,4 @@ export default function HazardDetail() {
             </button>
         </div>
     );
-}
+}

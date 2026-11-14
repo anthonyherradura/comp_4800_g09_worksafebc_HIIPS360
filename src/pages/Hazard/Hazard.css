@@ -917,6 +917,48 @@
     color: var(--wsbc-warm-grey);
 }
 
+/* Unaddressed: status and what to do next in one callout instead of pill + loose text */
+.hd-callout {
+    align-self: stretch;
+    /* .hd-head aligns children to flex-start; the callout spans the width */
+    margin-top: 4px;
+    padding: 10px 12px;
+    border-left: 4px solid var(--wsbc-orange);
+    border-radius: 8px;
+    background: var(--wsbc-pale-sunrise-yellow);
+}
+
+.hd-callout-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 2px;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--wsbc-black);
+}
+
+.hd-callout-title::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wsbc-orange);
+}
+
+.hd-callout-text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--wsbc-iron-grey);
+}
+
+.hd-callout-page {
+    margin: 6px 0 0;
+    font-size: 0.8125rem;
+    color: var(--wsbc-iron-grey);
+}
+
 /* Status pill: green by default, yellow with an orange dot while unaddressed */
 .hd-status {
     display: inline-flex;
