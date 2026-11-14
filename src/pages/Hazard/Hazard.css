@@ -794,6 +794,20 @@
     color: var(--wsbc-bodycopy);
 }
 
+.ha-actions--match {
+    flex-direction: column;
+}
+
+.ha-new {
+    background: var(--wsbc-white);
+    border: 2px solid var(--wsbc-orange);
+    color: var(--wsbc-black);
+}
+
+.ha-new:hover {
+    background: var(--wsbc-pale-sunrise-yellow);
+}
+
 /* ---------- Focus and motion ---------- */
 .ha-input:focus-visible,
 .ha-suggest-input:focus-visible,

@@ -240,14 +240,10 @@ export default function HazardAdd() {
                 )}
 
                 {phase === "ready" && match && (
-                    <>
-                        <p className="ha-suggest-text">
-                            Similar to <strong>{match.name}</strong>. Accept adds your photo and description to that hazard.
-                        </p>
-                        <button type="button" className="ha-retry" onClick={() => setMatchId(null)}>
-                            Create a new hazard instead
-                        </button>
-                    </>
+                    <p className="ha-suggest-text">
+                        Similar to <strong>{match.name}</strong>. Add to this hazard puts your photo and description
+                        on it, or create a new hazard if it's something different.
+                    </p>
                 )}
 
                 {phase === "ready" && !match && (
@@ -299,14 +295,19 @@ export default function HazardAdd() {
                 )}
             </section>
 
-            <div className="ha-actions">
+            <div className={match ? "ha-actions ha-actions--match" : "ha-actions"}>
                 <button type="submit" className="btn btn-orange" disabled={!suggestion.trim() || suggesting || saving}>
-                    {saving ? "Saving…" : "Accept"}
+                    {saving ? "Saving…" : match ? "Add to this hazard" : "Accept"}
                 </button>
+                {match && (
+                    <button type="button" className="btn ha-new" onClick={() => setMatchId(null)}>
+                        Create new hazard
+                    </button>
+                )}
                 <button type="button" className="btn ha-clear" onClick={handleClear} disabled={suggesting}>
                     Clear
                 </button>
             </div>
         </form>
     );
-}
+}
