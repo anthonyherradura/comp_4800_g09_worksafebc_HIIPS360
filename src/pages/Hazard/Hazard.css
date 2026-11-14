@@ -634,7 +634,8 @@
     align-items: center;
     gap: 8px;
     margin: 0;
-    padding: 0; /* wsbc.css pads h2 */
+    padding: 0;
+    /* wsbc.css pads h2 */
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -741,7 +742,8 @@
 .ha-suggest-input {
     display: block;
     width: 100%;
-    height: auto; /* wsbc.css makes textareas 150px tall; the rows attribute sets it here */
+    height: auto;
+    /* wsbc.css makes textareas 150px tall; the rows attribute sets it here */
     min-height: 48px;
     margin: 0;
     padding: 8px 10px;
@@ -1254,6 +1256,46 @@
     border-color: var(--wsbc-iron-grey);
     background: var(--wsbc-iron-grey);
     color: var(--wsbc-white);
+}
+
+/* Add photo + Not applicable in a row, Save hazard full width under them */
+.hd-actions {
+    flex-direction: column;
+}
+
+.hd-actions-row {
+    display: flex;
+    gap: 10px;
+}
+
+/* Add photo is now an outline secondary; Save hazard is the one primary */
+.hd-add {
+    background: var(--wsbc-white);
+}
+
+.hd-actions .hd-save {
+    flex: none;
+    /* .hd-actions .btn sets flex: 1, which would squash it in a column */
+    width: 100%;
+    color: var(--wsbc-black);
+    /* white on orange is only 2.4:1 */
+}
+
+.hd-save-error {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--wsbc-bodycopy);
+}
+
+.hl-saved {
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 4px solid var(--wsbc-moss-green);
+    border-radius: 6px;
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-bodycopy);
+    font-size: 0.9375rem;
 }
 
 /* Quiet red text button under the actions */

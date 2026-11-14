@@ -144,8 +144,15 @@ export function HazardProvider({ children }) {
             return id;
         });
 
+    // Save hazard: sends anything still waiting for this hazard and resolves true once the server has all of it.
+    // A failed save stays as a draft (and is retried), so false means "kept on screen, not saved yet".
+    const saveHazard = async (id) => {
+        await saveQueue.flush();
+        return !Object.keys(unsent.current[id] ?? {}).length;
+    };
+
     return (
-        <HazardContext.Provider value={{ hazards, addHazard, updateHazard, addPhotos, deleteHazard }}>
+        <HazardContext.Provider value={{ hazards, addHazard, updateHazard, addPhotos, deleteHazard, saveHazard }}>
             {children}
         </HazardContext.Provider>
     );

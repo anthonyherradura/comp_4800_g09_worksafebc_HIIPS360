@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
 import { HAZARD_STATUS, STATUS_LABEL, groupByStatus, photoCount } from "../../data/hazardStatus";
 import { getSheetHazard } from "../../data/sheets";
@@ -30,6 +30,7 @@ const DownloadIcon = () => (
 // Shows what was recorded only. It never says whether the site is compliant.
 export default function HazardList() {
     const { hazards, updateHazard } = useHazards();
+    const saved = useLocation().state?.saved; // set by Save hazard on the detail page
     const [tab, setTab] = useState(HAZARD_STATUS.UNADDRESSED);
     const [exportMessage, setExportMessage] = useState("");
     const [exporting, setExporting] = useState(false);
@@ -72,6 +73,11 @@ export default function HazardList() {
     return (
         <div className="hl-page">
             <h1 className="hl-title">Hazards</h1>
+            {saved && (
+                <p className="hl-saved" role="status">
+                    Saved “{saved}”.
+                </p>
+            )}
 
             {hazards.length === 0 ? (
                 <p className="hl-empty">

@@ -109,11 +109,14 @@ function SheetGuidance({ guidance }) {
 export default function HazardDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { hazards, updateHazard, addPhotos, deleteHazard } = useHazards();
+    const { hazards, updateHazard, addPhotos, deleteHazard, saveHazard } = useHazards();
     const hazard = hazards.find((h) => h.id === id);
     const guidance = hazard?.source === "sheet" ? getSheetHazard(hazard.sheetId, hazard.sheetKey) : null;
     const [tab, setTab] = useState(guidance ? "guidance" : "comment"); // "guidance" | "comment" | "photos"
     const [deleting, setDeleting] = useState(false);
+    const [uploading, setUploading] = useState(0); // photo uploads still going
+    const [saving, setSaving] = useState(false);
+    const [saveFailed, setSaveFailed] = useState(false);
 
     // Just deleted here: the list is about to show
     if (!hazard && deleting) return null;
@@ -134,10 +137,23 @@ export default function HazardDetail() {
     const statusKey = getHazardStatus(hazard);
     const page = hazard.page ?? guidance?.page; // shown only if the sheet data has a page number
 
-    const handleAddPhotos = (e) => {
+    const handleAddPhotos = async (e) => {
         const files = Array.from(e.target.files || []);
-        if (files.length) addPhotos(id, files.map((f) => URL.createObjectURL(f)));
         e.target.value = "";
+        if (!files.length) return;
+        setUploading((n) => n + 1);
+        await addPhotos(id, files.map((f) => URL.createObjectURL(f)));
+        setUploading((n) => n - 1);
+    };
+
+    // Autosave keeps running; this waits until the server has everything, then goes back to the list
+    const handleSave = async () => {
+        setSaving(true);
+        setSaveFailed(false);
+        const ok = await saveHazard(id);
+        setSaving(false);
+        if (ok) navigate("/hazard", { state: { saved: hazard.name } });
+        else setSaveFailed(true);
     };
 
     const handleRemovePhoto = (url) => {
@@ -161,7 +177,7 @@ export default function HazardDetail() {
                 <BackIcon /> Hazards
             </Link>
 
-                        <header className="hd-head">
+            <header className="hd-head">
                 {guidance?.stage && <p className="hd-kicker">{guidance.stage}</p>}
                 <h1 className="hd-name">{hazard.name}</h1>
                 {statusKey === HAZARD_STATUS.UNADDRESSED ? (
@@ -262,26 +278,41 @@ export default function HazardDetail() {
             )}
 
             <div className="hd-actions">
-                {/* Photos are added from here on every tab */}
-                <label className="btn btn-orange hd-add">
-                    <CameraPlusIcon />
-                    Add photo
-                    <input
-                        className="hz-visually-hidden"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        aria-label="Add photos"
-                        onChange={handleAddPhotos}
-                    />
-                </label>
+                <div className="hd-actions-row">
+                    {/* Photos are added from here on every tab */}
+                    <label className="btn hd-add">
+                        <CameraPlusIcon />
+                        Add photo
+                        <input
+                            className="hz-visually-hidden"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            aria-label="Add photos"
+                            onChange={handleAddPhotos}
+                        />
+                    </label>
+                    <button
+                        type="button"
+                        className="btn hd-na"
+                        aria-pressed={Boolean(hazard.notApplicable)}
+                        onClick={() => updateHazard(id, { notApplicable: !hazard.notApplicable })}
+                    >
+                        {hazard.notApplicable ? "Mark as applicable" : "Not applicable"}
+                    </button>
+                </div>
+                {saveFailed && (
+                    <p className="hd-save-error" role="alert">
+                        Not saved yet. Your changes are kept here and will be tried again when you have a connection.
+                    </p>
+                )}
                 <button
                     type="button"
-                    className="btn hd-na"
-                    aria-pressed={Boolean(hazard.notApplicable)}
-                    onClick={() => updateHazard(id, { notApplicable: !hazard.notApplicable })}
+                    className="btn btn-orange hd-save"
+                    onClick={handleSave}
+                    disabled={saving || uploading > 0}
                 >
-                    {hazard.notApplicable ? "Mark as applicable" : "Not applicable"}
+                    {uploading > 0 ? "Uploading photo…" : saving ? "Saving…" : "Save hazard"}
                 </button>
             </div>
 
