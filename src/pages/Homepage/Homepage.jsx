@@ -177,24 +177,24 @@ export default function HomePage() {
                     <p className="home-selected-name">
                         {selected.name} <span className="home-selected-cu">{selected.cu}</span>
                     </p>
-                    <ul className="home-selected-links">
-                        <li>
-                            <Link to="/hazard">
-                                <span className="home-link-icon home-link-icon--warn"><WarningIcon /></span>
-                                <span className="home-card-text">
-                                    <span className="home-card-title">
-                                        {plural(getSheetHazards(selected.sheetId).length, "hazard")} to review
-                                    </span>
-                                </span>
-                                <span className="home-arrow" aria-hidden="true" />
-                            </Link>
-                        </li>
+                                        <ul className="home-selected-links">
                         <li>
                             <Link to="/planning">
                                 <span className="home-link-icon"><ChecklistIcon /></span>
                                 <span className="home-card-text">
                                     <span className="home-card-title">
                                         {plural(getSheetChecklist(selected.sheetId).length, "checklist item")}
+                                    </span>
+                                </span>
+                                <span className="home-arrow" aria-hidden="true" />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/hazard">
+                                <span className="home-link-icon home-link-icon--warn"><WarningIcon /></span>
+                                <span className="home-card-text">
+                                    <span className="home-card-title">
+                                        {plural(getSheetHazards(selected.sheetId).length, "hazard")} to review
                                     </span>
                                 </span>
                                 <span className="home-arrow" aria-hidden="true" />
@@ -327,4 +327,4 @@ export default function HomePage() {
             </div>
         </div>
     );
-}
+}
