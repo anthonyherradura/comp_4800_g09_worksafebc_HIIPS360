@@ -61,7 +61,7 @@ export default function Layout({ showNav = true }) {
         <div className="app-shell">
             <div className="phone">
                 <header className="header">
-                    <Link to="/home" className="logo-link" aria-label="HIIPS360 home">
+                    <Link to="/jobs" className="logo-link" aria-label="HIIPS360: select a job site">
                         <LogoLockup className="header-logo" />
                     </Link>
                     {showNav && (
@@ -110,4 +110,4 @@ export default function Layout({ showNav = true }) {
             </div>
         </div>
     );
-}
+}
