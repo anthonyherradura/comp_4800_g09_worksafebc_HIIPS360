@@ -73,7 +73,7 @@ export default function PlanningPage() {
     const handleNotes = (event) => {
         if (currentJob) saveVisitNotes(currentJob.id, event.target.value);
     };
-    const [openGroup, setOpenGroup] = useState(null); // null until the person opens one; the first group starts open
+        const [openGroup, setOpenGroup] = useState(""); // every group starts closed; "" means none open
 
     // The checklist comes from the job's protocol sheet; its progress is saved on the job
     const items = getSheetChecklist(currentJob?.sheetId);
@@ -84,7 +84,7 @@ export default function PlanningPage() {
     const statusOf = (item) => statuses[item.id] || "pending";
     const doneCount = items.filter((item) => statusOf(item) !== "pending").length;
     const percent = items.length ? Math.round((doneCount / items.length) * 100) : 0;
-    const activeGroup = openGroup === null ? groups[0] : openGroup; // "" means all closed
+    const activeGroup = openGroup;
 
     return (
         <div className="planning-page">
@@ -184,4 +184,4 @@ export default function PlanningPage() {
             </div>
         </div>
     );
-}
+}

@@ -5,7 +5,7 @@ import "../Homepage/Homepage.css";
 export default function PdfsPage() {
     return (
         <div className="page-content">
-            <Link to="/home">Back to home</Link>
+            <Link to="/home" className="pdfs-back">Back to home</Link>
             <h1 className="home-title">Protocol sheet PDFs</h1>
 
             <ul className="list">

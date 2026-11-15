@@ -54,7 +54,8 @@
     align-items: center;
     gap: 4px;
     min-width: 0;
-    min-height: 44px;
+    min-height: 48px;
+    /* B-08: 48px glove target */
     margin-left: auto;
     padding: 0 6px;
     color: var(--wsbc-black);
@@ -120,8 +121,9 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    min-width: 44px;
-    height: 44px;
+    min-width: 48px;
+    height: 48px;
+    /* B-08: 48px glove target */
     padding: 0 6px;
     white-space: nowrap;
     border: none;
@@ -228,6 +230,7 @@
     outline: 3px solid var(--wsbc-white);
     outline-offset: -3px;
 }
+
 /* A save that didn't reach the server (JobContext saveError) */
 .save-error {
     display: flex;
@@ -246,7 +249,8 @@
 }
 
 .save-error-close {
-    min-height: 44px;
+    min-height: 48px;
+    /* B-08: 48px glove target */
     padding: 0 12px;
     border: 2px solid var(--wsbc-iron-grey);
     border-radius: 4px;

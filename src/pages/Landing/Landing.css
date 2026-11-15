@@ -161,7 +161,8 @@
 }
 
 .landing-install-btn {
-    min-height: 44px;
+    min-height: 48px;
+    /* B-08: 48px glove target */
     padding: 0 8px;
     border: none;
     background: none;

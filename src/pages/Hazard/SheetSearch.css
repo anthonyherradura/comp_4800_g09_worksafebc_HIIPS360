@@ -16,11 +16,17 @@
     height: 57px;
     border: 1px solid var(--wsbc-smoke-grey);
     border-radius: 0;
-    background: var(--wsbc-steel-grey);
+    background: var(--wsbc-white);
+    /* B-07: steel grey made the default placeholder 2.92:1 */
     color: var(--wsbc-bodycopy);
     padding: 0 14px;
     font: inherit;
     font-size: 1.125rem;
+}
+
+.ss-input::placeholder {
+    color: var(--wsbc-warm-grey);
+    /* 5.00:1 on white */
 }
 
 .ss-input:focus-visible,
@@ -74,7 +80,8 @@
 .ss-regs {
     margin: 0 0 8px;
     font-weight: 600;
-    color: var(--wsbc-orange);
+    color: var(--wsbc-black);
+    /* B-07: orange text fails on every background */
 }
 
 .ss-notice {

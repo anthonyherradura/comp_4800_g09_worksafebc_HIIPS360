@@ -38,7 +38,8 @@
 .jobs-input {
     flex: 1;
     min-width: 0;
-    height: 44px;
+    height: 48px;
+    /* B-08: 48px glove target */
     padding: 0 12px;
     border: 1px solid var(--wsbc-steel-grey);
     border-radius: 10px;
@@ -52,8 +53,9 @@
 }
 
 .jobs-add-btn {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
+    /* B-08: 48px glove target */
     flex-shrink: 0;
     display: grid;
     place-items: center;
@@ -188,6 +190,11 @@
     padding-right: 80px;
 }
 
+/* B-07: warm grey is 3.86:1 on the current job's pale yellow */
+.jobs-item.is-current .jobs-meta {
+    color: var(--wsbc-bodycopy);
+}
+
 .jobs-item.is-current::after {
     content: "Current";
     position: absolute;
@@ -202,8 +209,9 @@
 }
 
 .jobs-remove {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
+    /* B-08: 48px glove target */
     flex-shrink: 0;
     padding: 12px;
     border: none;
