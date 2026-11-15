@@ -82,22 +82,12 @@ router.post("/:jobId/open", async (req, res) => {
     return job ? sendJob(res, job) : notFound(res, "Job");
 });
 
-router.delete("/:jobId/hazards/:hazardId", async (req, res) => {
-    const { jobId, hazardId } = req.params;
-    // Only officer-added hazards can be deleted; sheet hazards are marked not applicable instead
-    const job = await Job.findOneAndUpdate(
-        { ...mine(req), hazards: { $elemMatch: { _id: hazardId, source: "officer" } } },
-        { $pull: { hazards: { _id: hazardId } } },
-        UPDATE,
-    );
-    if (!job) {
-        if (await Job.exists(hazardInJob(req))) {
-            return res.status(403).json({ error: "Hazards from the protocol sheet can't be deleted. Mark it not applicable instead." });
-        }
-        return notFound(res, "Hazard");
-    }
-    await Photo.deleteMany({ jobId, hazardId });
-    sendJob(res, job);
+router.delete("/:jobId", async (req, res) => {
+    const { deletedCount } = await Job.deleteOne(mine(req));
+    if (!deletedCount) return notFound(res, "Job");
+    // The job is gone first, so a failure here leaves only photos nobody can reach, never a job with missing photos
+    await Photo.deleteMany({ jobId: req.params.jobId });
+    res.status(204).end();
 });
 
 // Picks, changes or clears the sheet. The new sheetId and the synced hazards are written in one update to one
@@ -197,8 +187,18 @@ router.patch("/:jobId/hazards/:hazardId", async (req, res) => {
 
 router.delete("/:jobId/hazards/:hazardId", async (req, res) => {
     const { jobId, hazardId } = req.params;
-    const job = await Job.findOneAndUpdate(hazardInJob(req), { $pull: { hazards: { _id: hazardId } } }, UPDATE);
-    if (!job) return notFound(res, "Hazard");
+    // Only officer-added hazards can be deleted; sheet hazards are marked not applicable instead
+    const job = await Job.findOneAndUpdate(
+        { ...mine(req), hazards: { $elemMatch: { _id: hazardId, source: "officer" } } },
+        { $pull: { hazards: { _id: hazardId } } },
+        UPDATE,
+    );
+    if (!job) {
+        if (await Job.exists(hazardInJob(req))) {
+            return res.status(403).json({ error: "Hazards from the protocol sheet can't be deleted. Mark it not applicable instead." });
+        }
+        return notFound(res, "Hazard");
+    }
     await Photo.deleteMany({ jobId, hazardId });
     sendJob(res, job);
 });
