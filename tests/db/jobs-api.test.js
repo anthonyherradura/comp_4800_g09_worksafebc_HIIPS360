@@ -450,6 +450,26 @@ test("DB-23 deleting a hazard or a job deletes its photos", { skip }, async () =
     assert.equal((await call("GET", `/jobs/${job.id}`)).status, 404);
 });
 
+test("DB-23b sheet hazards can't be deleted, officer hazards can", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    const loaded = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job.hazards;
+    const sheetHazard = loaded.find((h) => h.source === "sheet");
+
+    const refused = await call("DELETE", `/jobs/${job.id}/hazards/${sheetHazard.id}`);
+    assert.equal(refused.status, 403);
+    assert.match(refused.data.error, /not applicable/);
+    const after = (await call("GET", `/jobs/${job.id}`)).data.job.hazards;
+    assert.equal(after.length, loaded.length);
+
+    // Another officer still gets 404, not 403
+    const other = await officer();
+    assert.equal((await other("DELETE", `/jobs/${job.id}/hazards/${sheetHazard.id}`)).status, 404);
+
+    const mine = (await call("POST", `/jobs/${job.id}/hazards`, { name: "Mine" })).data.hazardId;
+    assert.equal((await call("DELETE", `/jobs/${job.id}/hazards/${mine}`)).status, 200);
+});
+
 // ---------- recent sheets ----------
 
 test("DB-24 recent sheets: newest first, no repeats, at most the limit, unknown sheets refused", { skip }, async () => {

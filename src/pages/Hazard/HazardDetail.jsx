@@ -316,9 +316,12 @@ export default function HazardDetail() {
                 </button>
             </div>
 
-            <button type="button" className="hd-delete" onClick={handleDelete}>
-                Delete hazard
-            </button>
+            {/* Only hazards the officer logged can be deleted. Sheet hazards are marked Not applicable instead. */}
+            {hazard.source === "officer" && (
+                <button type="button" className="hd-delete" onClick={handleDelete}>
+                    Delete hazard
+                </button>
+            )}
         </div>
     );
 }

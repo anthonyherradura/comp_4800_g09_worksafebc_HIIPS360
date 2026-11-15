@@ -12,7 +12,7 @@
 //   PUT    /api/jobs/:jobId/visit-notes { visitNotes } -> { job }
 //   POST   /api/jobs/:jobId/hazards  { name, comment? } -> 201 { job, hazardId }
 //   PATCH  /api/jobs/:jobId/hazards/:hazardId { comment?, notApplicable? } -> { job }
-//   DELETE /api/jobs/:jobId/hazards/:hazardId          -> { job }    with its photos
+//   DELETE /api/jobs/:jobId/hazards/:hazardId          -> { job }    with its photos; officer hazards only (403 for sheet)
 //   POST   /api/jobs/:jobId/hazards/:hazardId/photos (multipart, field "photos", 1 or more) -> 201 { job }
 //   DELETE /api/jobs/:jobId/hazards/:hazardId/photos/:photoId -> { job }
 import { Router } from "express";
@@ -82,12 +82,22 @@ router.post("/:jobId/open", async (req, res) => {
     return job ? sendJob(res, job) : notFound(res, "Job");
 });
 
-router.delete("/:jobId", async (req, res) => {
-    const { deletedCount } = await Job.deleteOne(mine(req));
-    if (!deletedCount) return notFound(res, "Job");
-    // The job is gone first, so a failure here leaves only photos nobody can reach, never a job with missing photos
-    await Photo.deleteMany({ jobId: req.params.jobId });
-    res.status(204).end();
+router.delete("/:jobId/hazards/:hazardId", async (req, res) => {
+    const { jobId, hazardId } = req.params;
+    // Only officer-added hazards can be deleted; sheet hazards are marked not applicable instead
+    const job = await Job.findOneAndUpdate(
+        { ...mine(req), hazards: { $elemMatch: { _id: hazardId, source: "officer" } } },
+        { $pull: { hazards: { _id: hazardId } } },
+        UPDATE,
+    );
+    if (!job) {
+        if (await Job.exists(hazardInJob(req))) {
+            return res.status(403).json({ error: "Hazards from the protocol sheet can't be deleted. Mark it not applicable instead." });
+        }
+        return notFound(res, "Hazard");
+    }
+    await Photo.deleteMany({ jobId, hazardId });
+    sendJob(res, job);
 });
 
 // Picks, changes or clears the sheet. The new sheetId and the synced hazards are written in one update to one
