@@ -11,8 +11,10 @@ const SECOND_FALLBACK_MODEL = process.env.GEMINI_SECOND_FALLBACK_MODEL ?? "gemin
 // The answers are short, so skip the model's thinking step (cuts ~4 s to ~1-2 s).
 // Every model must support the "minimal" level (Gemini 3.5 / 3.6 Flash and flash-lite-latest do; 3.7+ don't).
 const THINKING = { thinkingLevel: "minimal" };
-// If a model hasn't answered by then, start the next one too and take whichever answers first
-const HEDGE_AFTER_MS = 2500;
+// If a model hasn't answered by then, start the next one too and take whichever answers first.
+// B-12: a lower GEMINI_HEDGE_MS answers sooner when a model is slow, but uses quota on two models (B-11),
+// so it stays at 2.5 s unless the key has room for it.
+const HEDGE_AFTER_MS = Number(process.env.GEMINI_HEDGE_MS) || 2500;
 // Give up on everything after this, so the officer never waits on a hung request
 const TIMEOUT_MS = 8000;
 
@@ -186,6 +188,7 @@ function parseSheetMatches(raw, model, known) {
 
 // Starts the first model; starts the next one when the current one fails or HEDGE_AFTER_MS passes.
 // Resolves with the first answer and cancels the rest; rejects once every model has failed.
+// If a model was out of quota (429), the rejection has code "BUSY", and daily: true when waiting a minute won't help (B-11).
 // request: { parts, config (systemInstruction etc.), parse(rawText, model) -> answer or throws }
 function firstAnswer(request) {
     getClient(); // fail fast on a missing key instead of trying every model
@@ -197,7 +200,14 @@ function firstAnswer(request) {
         let pending = 0;
         let done = false;
         let hedgeTimer;
+        let minuteQuotaHit = false;
+        let dayQuotaHit = false;
 
+        const fail = (err) => {
+            if (!minuteQuotaHit && !dayQuotaHit) return finish(reject, err);
+            const busy = new Error(`Gemini quota used up: ${err.message.slice(0, 300)}`);
+            finish(reject, Object.assign(busy, { code: "BUSY", daily: !minuteQuotaHit }));
+        };
         const finish = (settle, value) => {
             if (done) return;
             done = true;
@@ -207,7 +217,7 @@ function firstAnswer(request) {
             settle(value);
         };
         const deadline = setTimeout(
-            () => finish(reject, new Error(`No answer from Gemini within ${TIMEOUT_MS / 1000} s`)),
+            () => fail(new Error(`No answer from Gemini within ${TIMEOUT_MS / 1000} s`)),
             TIMEOUT_MS
         );
 
@@ -228,8 +238,13 @@ function firstAnswer(request) {
                     // The fallback model would get the same unreadable photo, so don't spend quota on it
                     if (err.code === "BAD_PHOTO") return finish(reject, err);
                     console.warn(`Gemini model ${model} failed:`, err.message.slice(0, 300));
+                    // 429 RESOURCE_EXHAUSTED: the per-minute allowance is back within a minute, the per-day one isn't
+                    if (err.status === 429) {
+                        if (/PerDay/i.test(err.message)) dayQuotaHit = true;
+                        else minuteQuotaHit = true;
+                    }
                     if (next < models.length) start();
-                    else if (pending === 0) finish(reject, err);
+                    else if (pending === 0) fail(err);
                 }
             );
         };

@@ -3,7 +3,8 @@
 //        hazards is a JSON list of the job's [{ id, name }]; matchId is the one the input is the same as, or null;
 //        description is a write-up of what was seen, for the officer to edit ("" when no hazard was found)
 //   POST /api/ai/match-sheet     (multipart: text?, photo?)  -> 200 { matches: [{ sheetId, reason }] }
-// Errors are { error } with a message that is safe to show to the officer.
+// Errors are { error } with a message that is safe to show to the officer: 400 for the input, 429 for too many
+// requests from this officer, 503 when Gemini's quota is used up (wait and retry), 502 for any other Gemini failure.
 
 import { Router } from "express";
 import multer from "multer";
@@ -84,6 +85,14 @@ function readHazards(req) {
 function sendGeminiError(res, err) {
     if (err.code === "BAD_PHOTO") {
         return res.status(400).json({ error: "We couldn't read that photo. Try another one." });
+    }
+    // B-11: out of free-tier quota isn't "the service is down". Say how long to wait.
+    if (err.code === "BUSY") {
+        console.warn("Gemini quota:", err.message);
+        if (err.daily) {
+            return res.status(503).json({ error: "The AI has reached today's limit. Carry on without it, or try again tomorrow." });
+        }
+        return res.status(503).set("Retry-After", "60").json({ error: "The AI is busy right now. Wait a minute and try again." });
     }
     console.error("Gemini request failed:", err);
     const detail = process.env.NODE_ENV === "production" ? "" : ` (${err.message})`;

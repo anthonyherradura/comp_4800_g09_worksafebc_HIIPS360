@@ -200,6 +200,27 @@ test("AI-12 Gemini can't read the photo: 400 about the photo, not 'service isn't
     assert.equal(logged.mock.callCount(), 0);
 });
 
+test("AI-13 Gemini is out of quota: 503 with a wait message, never 'service isn't available' (B-11)", async (t) => {
+    t.mock.method(console, "warn", () => {});
+    const logged = t.mock.method(console, "error", () => {});
+
+    reset(async () => {
+        throw Object.assign(new Error("Gemini quota used up: 429"), { code: "BUSY", daily: false });
+    });
+    const res = await fetch(url, { method: "POST", body: form({ text: "ladder" }) });
+    assert.equal(res.status, 503);
+    assert.equal(res.headers.get("retry-after"), "60");
+    assert.deepEqual(await res.json(), { error: "The AI is busy right now. Wait a minute and try again." });
+
+    reset(async () => {
+        throw Object.assign(new Error("Gemini quota used up: 429"), { code: "BUSY", daily: true });
+    });
+    const daily = await post(url, form({ text: "ladder" }));
+    assert.equal(daily.status, 503);
+    assert.deepEqual(daily.body, { error: "The AI has reached today's limit. Carry on without it, or try again tomorrow." });
+    assert.equal(logged.mock.callCount(), 0);
+});
+
 test("AI-11 rate limit: the 31st request in 15 minutes gets 429", async () => {
     reset();
     // A fresh copy of the router, so this test has its own limiter and doesn't eat into the others'
@@ -294,6 +315,14 @@ test("SHEET-07 Gemini fails: 502, and an unreadable photo gets the photo message
     const bad = await post(matchUrl, form({ photos: [{}] }));
     assert.equal(bad.status, 400);
     assert.deepEqual(bad.body, { error: "We couldn't read that photo. Try another one." });
+
+    t.mock.method(console, "warn", () => {});
+    resetMatch(async () => {
+        throw Object.assign(new Error("Gemini quota used up: 429"), { code: "BUSY", daily: false });
+    });
+    const busy = await post(matchUrl, form({ text: "logging" }));
+    assert.equal(busy.status, 503);
+    assert.deepEqual(busy.body, { error: "The AI is busy right now. Wait a minute and try again." });
 });
 
 test("MATCH-01 with the job's hazards the route returns the matching hazard id", async () => {

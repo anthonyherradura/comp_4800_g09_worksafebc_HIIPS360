@@ -32,6 +32,16 @@
     --fs-h2: 1.3rem;
     --fs-h3: 1.1rem;
     --fs-body: 1rem;
+
+    /* Space the phone keeps for itself: the Dynamic Island / status bar on top, the home indicator below.
+       0 on devices without them. iOS only reports these because index.html sets viewport-fit=cover. */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* No rubber-band scrolling of the whole app, which would pull the header away from the top edge */
+html {
+    overscroll-behavior: none;
 }
 
 *,

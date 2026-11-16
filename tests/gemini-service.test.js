@@ -176,6 +176,41 @@ test("GEM-13 Gemini can't read the photo: BAD_PHOTO error and the fallback is no
     assert.deepEqual(calls.map((c) => c.model), ["primary-model"]);
 });
 
+// What @google/genai throws for a 429: an ApiError with the status and Gemini's JSON as the message
+const quota = (quotaId) => () =>
+    Promise.reject(
+        Object.assign(new Error(`{"error":{"code":429,"status":"RESOURCE_EXHAUSTED","details":[{"quotaId":"${quotaId}"}]}}`), {
+            status: 429,
+        })
+    );
+const PER_MINUTE = "GenerateRequestsPerMinutePerProjectPerModel-FreeTier";
+const PER_DAY = "GenerateRequestsPerDayPerProjectPerModel-FreeTier";
+
+test("GEM-25 a model out of quota and no other answers: BUSY, so the officer is told to wait (B-11)", async (t) => {
+    setup(t, { "primary-model": quota(PER_MINUTE), "backup-model": fails("503 overloaded"), "third-model": quota(PER_DAY) });
+    await assert.rejects(suggestHazard({ text: "x" }), { code: "BUSY", daily: false });
+    assert.equal(calls.length, 3);
+});
+
+test("GEM-26 only the daily quota is used up: BUSY with daily, since waiting a minute won't help (B-11)", async (t) => {
+    setup(t, { "primary-model": quota(PER_DAY), "backup-model": quota(PER_DAY), "third-model": fails("503 overloaded") });
+    await assert.rejects(suggestHazard({ text: "x" }), { code: "BUSY", daily: true });
+});
+
+test("GEM-27 out of quota on one model, the rest never answer: BUSY at the 8 s timeout (B-11)", async (t) => {
+    setup(t, { "primary-model": quota(PER_MINUTE), "backup-model": hangs(), "third-model": hangs() });
+    const result = suggestHazard({ text: "x" });
+    await new Promise((resolve) => setImmediate(resolve)); // let the 429 arrive and the fallback start
+    t.mock.timers.tick(8000);
+    await assert.rejects(result, { code: "BUSY", daily: false });
+    assert.ok(calls.every((c) => c.signal.aborted));
+});
+
+test("GEM-28 out of quota on one model but another answers: the officer just gets the answer (B-11)", async (t) => {
+    setup(t, { "primary-model": quota(PER_MINUTE), "backup-model": answers("Unsecured Ladder") });
+    assert.equal(await suggestHazard({ text: "ladder" }), "Unsecured Ladder");
+});
+
 // ---------- matchSheets ----------
 const SHEETS = [
     { sheetId: "cu-732044", name: "Log Transport", cu: "CU 732044", summary: "Hauling logs by logging truck." },
