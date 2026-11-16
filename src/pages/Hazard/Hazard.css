@@ -26,6 +26,9 @@
 .ha-page,
 .hd-page {
     overflow-y: auto;
+    /* Keeps the hidden photo input (position: absolute) inside this scroll area. Without it the input sits
+       below the screen on a short viewport and makes the whole app scroll, header included. */
+    position: relative;
 }
 
 /* Title row */

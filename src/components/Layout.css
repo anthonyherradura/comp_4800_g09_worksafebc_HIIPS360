@@ -1,5 +1,7 @@
 .app-shell {
     min-height: 100vh;
+    min-height: 100dvh;
+    /* same height as .phone, or Safari's toolbar leaves the page scrolling by the difference */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,11 +25,12 @@
 /* ---------- Header: orange, logo left, current job, sign out with icon ---------- */
 .header {
     flex-shrink: 0;
-    min-height: calc(52px + env(safe-area-inset-top, 0px));
+    /* The orange runs up behind the Dynamic Island; the logo and buttons start below it */
+    min-height: calc(52px + var(--safe-top));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: env(safe-area-inset-top, 0px) 14px 0 16px;
+    padding: var(--safe-top) 14px 0 16px;
     background: var(--header-bg);
 }
 
@@ -160,9 +163,15 @@
     min-height: 0;
 }
 
+/* Public pages scroll inside the shell like the signed-in ones, so the header stays put and
+   nothing scrolls up behind the Dynamic Island */
+.page-scroll {
+    overflow-y: auto;
+}
+
 /* No nav bar below (public pages, job selection): keep the band clear of the home indicator */
 .page:last-child {
-    margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(16px + var(--safe-bottom));
 }
 
 /* ---------- Footer nav: iron grey, blue icons with labels, orange current item ---------- */
@@ -171,8 +180,8 @@
     display: flex;
     background: var(--nav-bg);
     /* At least 18px so the iPhone home bar never sits on the labels, even where the browser
-       reports no safe area (it needs viewport-fit=cover in index.html to report one) */
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 18px);
+       reports no safe area (Safari with its toolbar showing) */
+    padding-bottom: max(var(--safe-bottom), 18px);
 }
 
 .nav-btn {
@@ -269,7 +278,8 @@
     justify-content: center;
     gap: 16px;
     min-height: 100vh;
-    padding: 24px 16px;
+    min-height: 100dvh;
+    padding: calc(24px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
     background: var(--wsbc-ash-grey);
     color: var(--wsbc-bodycopy);
     text-align: center;
