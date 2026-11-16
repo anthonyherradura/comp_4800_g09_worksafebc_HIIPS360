@@ -290,16 +290,13 @@
     max-width: 32rem;
 }
 
-/* Installed to the Home Screen there is no browser toolbar, so plain vh is the whole screen.
-   iOS reports dvh short by the status bar height there (WebKit bug 254868), which left a dead
-   strip under the bottom nav. */
-@media (display-mode: standalone) {
-    .phone {
-        height: 100vh;
-    }
+/* --app-height is only set for an app installed to the iPhone Home Screen, where iOS reports the
+   viewport short by the status bar height (src/appHeight.js). Everywhere else this is 100dvh. */
+.phone {
+    height: var(--app-height, 100dvh);
+}
 
-    .app-shell,
-    .load-state {
-        min-height: 100vh;
-    }
+.app-shell,
+.load-state {
+    min-height: var(--app-height, 100dvh);
 }
