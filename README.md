@@ -326,10 +326,11 @@ There is no `npm run seed` yet.
 | `GEMINI_API_KEY` | Your own key from Google AI Studio. Only hazard suggestions need it; the API starts without it. |
 | `GEMINI_MODEL` | The main model. Check the name against Google's models list if you get model-not-found errors. |
 | `GEMINI_FALLBACK_MODEL` | Tried when the main model fails or takes more than 2.5 s. Leave it empty to turn the fallback off. |
+| `GEMINI_HEDGE_MS` | Optional. How long to wait for a slow model before starting the next one too (default `2500`). Lower answers sooner but uses quota on two models, so only lower it on a key with room. |
 
 `.env` is git-ignored. Never commit it, and don't share your secret or your key.
 
-**Gemini free tier.** A free key allows about 5 requests a minute and 20 a day per model (Nov 2026). The fallback model has its own allowance, but a slow answer uses quota on both models. Once the allowance is used up, every suggestion fails with "The AI suggestion service isn't available right now" until it resets (daily at midnight Pacific time). Before a demo, don't spend your quota on `npm run test:ai-live`, or use a separate key.
+**Gemini free tier.** A free key allows about 5 requests a minute and 20 a day per model (Nov 2026). The fallback model has its own allowance, but a slow answer uses quota on both models. Once a model's allowance is used up and no other model answers, the officer sees "The AI is busy right now. Wait a minute and try again." (per-minute limit) or "The AI has reached today's limit." (daily limit, which resets at midnight Pacific time). Both are a 503 from `/api/ai`. Before a demo, don't spend your quota on `npm run test:ai-live`, or use a separate key.
 
 **Testing**
 
@@ -352,7 +353,8 @@ There is no `npm run seed` yet.
 | `Could not connect to MongoDB` | Check `Get-Service MongoDB`; start it from an admin PowerShell. |
 | Still signed in after stopping the API | Intended. The device remembers the last signed-in user for offline use. |
 | `EADDRINUSE` on port 3001 or 5173 | An old server is still running, sometimes with no terminal open. Find it with `Get-NetTCPConnection -LocalPort 3001 -State Listen` and stop it with `Stop-Process -Id <OwningProcess>`. |
-| Every hazard suggestion says the service isn't available | Look at the API terminal. A `429 RESOURCE_EXHAUSTED` means the Gemini free-tier allowance is used up (see above); a `503` means Gemini is busy, so try again shortly. |
+| Every hazard suggestion says the service isn't available | Look at the API terminal. A `503` from Gemini means it is busy, so try again shortly; anything else is usually the key or a model name. |
+| Suggestions say the AI is busy or has reached today's limit | The Gemini free-tier allowance is used up (see above). The API terminal shows `Gemini quota:` with Gemini's `429 RESOURCE_EXHAUSTED`. |
 | The phone can't open the page | Check that both devices are on the same network, that the network is Private, and that you used `npm run dev:phone`. See **Trying it on a phone** above. |
 
 **Demo scenario (once the inspection flow is built):** Start a new inspection, choose (or photograph) a residential framing site, accept the suggested sheet, open the ladder hazard, attach a photo, mark confined space not applicable, then open the summary.
