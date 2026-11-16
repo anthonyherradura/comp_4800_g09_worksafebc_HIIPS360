@@ -13,6 +13,12 @@
     color: var(--wsbc-bodycopy);
 }
 
+/* Pulling the page past its top or bottom on a phone shows the scroll area behind it for a moment.
+   Match it to the hero above and the grey below, in place of the shell's white. */
+.page-scroll:has(.landing) {
+    background: linear-gradient(to bottom, var(--wsbc-orange) 50%, var(--wsbc-ash-grey) 50%);
+}
+
 /* Keeps line length readable when the page is opened on a wide screen */
 .landing-inner {
     width: 100%;
