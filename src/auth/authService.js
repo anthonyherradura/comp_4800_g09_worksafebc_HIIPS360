@@ -13,6 +13,9 @@
 // are never stored.
 
 const SESSION_KEY = "hiips360.session";
+// Set when signing out couldn't reach the server (B-13). The server session then still exists, and on a shared
+// device the next reload would sign the previous officer back in, so it is ended before anything else.
+const SIGN_OUT_PENDING_KEY = "hiips360.signOutPending";
 const OFFLINE_MESSAGE = "You're offline. Signing in needs a connection.";
 const UNREACHABLE_MESSAGE = "Can't reach the HIIPS360 server. Try again shortly.";
 
@@ -73,6 +76,7 @@ async function request(path, { method = "GET", body } = {}) {
 
 const remember = ({ user }) => {
     writeJSON(SESSION_KEY, user);
+    removeKey(SIGN_OUT_PENDING_KEY); // a new sign-in replaces the old server session
     return { user };
 };
 
@@ -86,14 +90,21 @@ export async function register({ name, email, password }) {
 
 export async function logout() {
     removeKey(SESSION_KEY);
+    writeJSON(SIGN_OUT_PENDING_KEY, true);
     try {
         await request("/logout", { method: "POST" });
+        removeKey(SIGN_OUT_PENDING_KEY);
     } catch {
-        // Offline or server down: the device is signed out either way
+        // Offline or server down: the device is signed out now, and getSession ends the server session later
     }
 }
 
 export async function getSession() {
+    if (readJSON(SIGN_OUT_PENDING_KEY, false)) {
+        // Nobody is signed in on this device, whatever the server still has
+        await logout();
+        return null;
+    }
     try {
         return remember(await request("/me"));
     } catch (error) {

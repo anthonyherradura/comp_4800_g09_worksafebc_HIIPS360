@@ -1,35 +1,35 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { searchSheets, warmUp } from "../../search/sheetSearch";
 import "./SheetSearch.css";
 
+const NO_RESULTS = { query: "", results: [], mode: "none" };
+
 export default function SheetSearch({ initialQuery = "", sheetId }) {
     const [query, setQuery] = useState(initialQuery);
-    const [state, setState] = useState({ results: [], mode: "none" });
-    const [busy, setBusy] = useState(false);
+    // The last finished search and the text it was for. What to show and "Searching..." are worked out
+    // from it during render, so the effect only sets state when a search comes back (B-15).
+    const [found, setFound] = useState(NO_RESULTS);
+    const q = query.trim();
+    const state = q ? found : NO_RESULTS;
+    const busy = q !== "" && found.query !== q;
 
     useEffect(() => {
         warmUp();
     }, []);
 
     useEffect(() => {
-        if (!query.trim()) {
-            setState({ results: [], mode: "none" });
-            return;
-        }
+        if (!q) return;
         let cancelled = false;
-        setBusy(true);
         const timer = setTimeout(async () => {
-            const next = await searchSheets(query, { sheetId });
-            if (!cancelled) {
-                setState(next);
-                setBusy(false);
-            }
+            const next = await searchSheets(q, { sheetId });
+            if (!cancelled) setFound({ ...next, query: q });
         }, 250);
         return () => {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, [query, sheetId]);
+    }, [q, sheetId]);
 
     return (
         <div className="ss">
@@ -68,6 +68,11 @@ export default function SheetSearch({ initialQuery = "", sheetId }) {
                             <p className="ss-meta">
                                 Sheet issued {r.issued}, page {r.page}
                             </p>
+                            {!sheetId && (
+                                <Link className="ss-more" to={`/sheets/${r.sheetId}?q=${encodeURIComponent(q)}`}>
+                                    More matches in this sheet
+                                </Link>
+                            )}
                         </details>
                     </li>
                 ))}
@@ -75,4 +80,4 @@ export default function SheetSearch({ initialQuery = "", sheetId }) {
 
         </div>
     );
-}
+}

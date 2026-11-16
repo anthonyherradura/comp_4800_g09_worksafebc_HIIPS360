@@ -1,5 +1,4 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import useAuth from "../auth/useAuth";
 import { useJobs } from "../context/JobContext";
 import { LogoLockup } from "./Logo";
 import "../styles/tokens.css";
@@ -48,12 +47,11 @@ const NAV_ITEMS = [
 
 // showNav: false for job selection (/jobs), which is its own page outside the regular navigation
 export default function Layout({ showNav = true }) {
-    const { logout } = useAuth();
-    const { currentJob, saveError, clearSaveError } = useJobs();
+    const { currentJob, saveError, clearSaveError, signOut } = useJobs();
     const navigate = useNavigate();
 
     const handleSignOut = async () => {
-        await logout();
+        await signOut();
         navigate("/login", { replace: true });
     };
 

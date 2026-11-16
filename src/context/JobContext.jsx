@@ -102,6 +102,14 @@ export function JobProvider({ children }) {
         };
     }, [saveQueue]);
 
+    // Sign out: sends what the officer typed first (waiting at most a few seconds), so it is saved to their
+    // account before the session ends and nothing of theirs is left for the next officer on the device (B-13)
+    const signOut = useCallback(async () => {
+        await Promise.race([saveQueue.flush(), new Promise((resolve) => setTimeout(resolve, 5000))]);
+        saveQueue.clear();
+        await logoutRef.current();
+    }, [saveQueue]);
+
     const reloadCurrentJob = useCallback(async () => {
         if (!currentJob) return;
         try {
@@ -233,6 +241,7 @@ export function JobProvider({ children }) {
         saveVisitNotes,
         saveError,
         clearSaveError: () => setSaveError(""),
+        signOut,
         // for HazardContext
         saveQueue,
         change,

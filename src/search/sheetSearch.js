@@ -1,5 +1,6 @@
 import MiniSearch from "minisearch";
 import { SHEETS } from "../data/sheets";
+import { dedupeResults } from "./dedupeResults.js";
 import ortMjs from "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.mjs?url";
 import ortWasm from "../../node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.wasm?url";
 
@@ -59,6 +60,7 @@ function dot(a, b) {
 /**
  * Search the sheets by meaning and by keyword, then merge the two rankings.
  * Returns { results, mode } where mode is "hybrid" or "keyword" (model not available).
+ * Without a sheetId, each sheet appears once (its best passage); with one, repeated passages appear once.
  */
 export async function searchSheets(query, { sheetId, limit = 8 } = {}) {
     const q = query.trim();
@@ -93,10 +95,11 @@ export async function searchSheets(query, { sheetId, limit = 8 } = {}) {
     bump(kw, "keyword");
     bump(sem, "meaning");
 
-    const results = [...scores.entries()]
-        .sort((a, b) => b[1] - a[1])
+    // Across every sheet the officer is picking a sheet, so each sheet is listed once (B-18)
+    const ranked = [...scores.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => byId.get(id));
+    const results = dedupeResults(ranked, { onePerSheet: !sheetId })
         .slice(0, limit)
-        .map(([id]) => ({ ...byId.get(id), matched: matched.get(id) }));
+        .map((c) => ({ ...c, matched: matched.get(c.id) }));
 
     return { results, mode, error };
 }

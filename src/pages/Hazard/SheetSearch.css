@@ -88,3 +88,17 @@
     margin: 8px 0 0;
     font-size: 0.75rem;
 }
+/* B-18: across every sheet each sheet is listed once; this opens the rest of its matches. 44px tap target (B-08) */
+.ss-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--wsbc-black);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.ss-more:focus-visible {
+    outline: 3px solid var(--wsbc-orange);
+    outline-offset: 2px;
+}
