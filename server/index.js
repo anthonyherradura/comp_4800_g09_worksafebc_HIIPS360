@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import config from "./config.js";
 import { createApp } from "./app.js";
+import { applySchema } from "./db/setup.js";
 
 try {
     await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 5000 });
@@ -11,8 +12,16 @@ try {
     process.exit(1);
 }
 
-// Build the unique email index before the first request, so duplicate sign-ups are rejected from the start
-await mongoose.syncIndexes();
+// Bring MongoDB's validators and indexes up to date before the first request (the same as `npm run db:setup`),
+// so a pull that changes them works without running anything by hand. The unique email index is built here too,
+// so duplicate sign-ups are rejected from the start.
+try {
+    await applySchema();
+} catch (err) {
+    // A database user that may not change validators (collMod) can still serve the app with the ones it has
+    console.warn(`Couldn't update MongoDB's validators, so the existing ones stay: ${err.message}`);
+    await mongoose.syncIndexes();
+}
 
 createApp().listen(config.port, () => {
     console.log(`HIIPS360 API on http://localhost:${config.port} (MongoDB connected)`);

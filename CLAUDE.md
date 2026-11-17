@@ -26,7 +26,7 @@ npm run preview   # serve the built app (also proxies /api)
 npm run lint      # ESLint (flat config in eslint.config.js)
 npm test          # node:test suites in tests/*.test.js (Gemini, fetch and DB mocked; no API, DB or key needed)
 npm run test:db   # tests/db/ against a real MongoDB (plain local server is fine); needs MONGODB_TEST_URI, skips without it
-npm run db:setup  # applies the jobs/photos validators + all indexes; safe to re-run, and needed after changing server/db/limits.js
+npm run db:setup  # applies the jobs/photos validators + all indexes, and lists old collections; the API also does this on every start
 npm run test:ai-live  # real Gemini check through the running API; spends quota
 
 # One test file:
@@ -42,7 +42,7 @@ Tests use Node's built-in `node:test` (Node 22.12+). Write a known bug as a `{ t
 
 MongoDB Server 8.0 runs locally as the Windows service `MongoDB` (`Start-Service MongoDB` from an admin PowerShell). Then `cp .env.example .env` and set `SESSION_SECRET`; the file explains how. No online account is needed. Atlas would only mean a different `MONGODB_URI`.
 
-Run `npm run db:setup` once, and again after pulling changes. No replica set is needed: every write changes one document (a job holds its hazards), so nothing uses transactions.
+The API applies the validators and indexes itself when it starts (`applySchema` in `server/index.js`), so a pull that changes them needs only a restart. `npm run db:setup` does the same by hand and also lists collections from the old design. If the database user can't change validators, the API logs a warning and keeps the old ones. No replica set is needed: every write changes one document (a job holds its hazards), so nothing uses transactions.
 
 `MONGODB_TEST_URI` is commented out in `.env.example`, so set it in `.env` or the shell. `node --env-file` doesn't override variables already set, so setting `MONGODB_URI` in the shell points the app at a separate database and keeps test accounts out of `hiips360`.
 
@@ -103,7 +103,7 @@ Older versions kept jobs in localStorage and hazards/photos in IndexedDB. `clear
 - `routes/jobs.js`, `routes/photos.js`, `routes/me.js`: the data API (route list at the top of each file). Every route uses `requireAuth`, and every query includes the session's `userId`, so another officer's job, hazard or photo answers 404. Changes answer with the whole updated job `{ job }`. Ids in URLs that aren't ObjectIds also get 404 (`routes/ids.js`). `tests/db/jobs-api.test.js` covers each route, ownership, races and the limits.
 - `routes/photos.js` answers `private, no-cache` with an `ETag` on purpose: a long `max-age` would let the browser cache get around the ownership check on a shared device.
 - `models/Job.js`: one document per job site with its hazards **embedded** (a sheet change or a delete touches one document, so it can't half-happen). Unique `{ userId, label }` ignoring case (collation strength 2) and `{ userId, lastOpenedAt: -1 }` for the list. `rev` goes up on every update; `PUT /sheets` writes only if `rev` hasn't moved since it read the job, and otherwise redoes the sync on the fresh copy.
-- `db/limits.js`: every limit (200 hazards per job, 20 photos per hazard, 10 MB per photo, text lengths, 3 recent sheets). Models, routes and validators read it; after changing a number run `npm run db:setup`. `db/validators.js`: MongoDB `$jsonSchema` validators for `jobs` and `photos` built from the limits, as a backstop under the Mongoose rules. `tests/db-schema.test.js` checks the two agree. `db/setup.js` applies them, builds indexes, and lists collections left from the earlier 14-collection design so they can be dropped by hand.
+- `db/limits.js`: every limit (200 hazards per job, 20 photos per hazard, 10 MB per photo, text lengths, 3 recent sheets). Models, routes and validators read it; after changing a number restart the API (or run `npm run db:setup`). `db/validators.js`: MongoDB `$jsonSchema` validators for `jobs` and `photos` built from the limits, as a backstop under the Mongoose rules. `tests/db-schema.test.js` checks the two agree. `db/setup.js` applies them, builds indexes, and lists collections left from the earlier 14-collection design so they can be dropped by hand.
 - Write order when two collections are involved: a photo is saved before its id goes on the hazard (and deleted again if that fails); on delete, the hazard/job goes first and its photos after. A failure in between leaves only an unreachable photo, never a broken image.
 
 ## Design system constraints
