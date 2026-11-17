@@ -307,6 +307,73 @@
     /* B-07: warm grey was 4.39:1 on ash grey */
 }
 
+/* The job's sheets, one row each: name, PDF, remove */
+.home-selected-sheets {
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+}
+
+.home-selected-sheet {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.home-selected-sheet .home-selected-name {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.home-selected-pdf,
+.home-selected-remove {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--wsbc-bodycopy);
+    cursor: pointer;
+}
+
+.home-selected-pdf svg,
+.home-selected-remove svg {
+    width: 100%;
+    height: 100%;
+}
+
+.home-selected-remove {
+    padding: 15px;
+}
+
+.home-selected-pdf:hover,
+.home-selected-remove:hover {
+    background: var(--wsbc-silver-grey);
+}
+
+/* Under the AI's suggestions when there are several: one tap adds them all */
+.home-add-all {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 8px;
+    border: 2px solid var(--wsbc-orange);
+    border-radius: 8px;
+    background: var(--wsbc-white);
+    color: var(--wsbc-black);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.home-add-all:hover {
+    background: var(--wsbc-pale-sunrise-yellow);
+}
+
 .home-selected-links {
     display: flex;
     flex-direction: column;
@@ -371,6 +438,9 @@
 .home-photo:focus-within,
 .home-send:focus-visible,
 .home-selected-links a:focus-visible,
+.home-selected-pdf:focus-visible,
+.home-selected-remove:focus-visible,
+.home-add-all:focus-visible,
 .home-card:focus-visible {
     outline: 3px solid var(--wsbc-black);
     outline-offset: 2px;

@@ -20,8 +20,8 @@ test("SCH-01 a new job gets every default the app reads", () => {
     const j = job();
     assert.deepEqual(errorsOf(j), []);
     assert.deepEqual(
-        [j.sheetId, j.checklist.size, j.visitNotes, j.visitNotesUpdatedAt, j.hazards.length, j.rev],
-        [null, 0, "", null, 0, 0],
+        [[...j.sheetIds], j.sheetId, j.checklist.size, j.visitNotes, j.visitNotesUpdatedAt, j.hazards.length, j.rev],
+        [[], undefined, 0, "", null, 0, 0],
     );
     assert.ok(j.lastOpenedAt instanceof Date);
 });
@@ -107,4 +107,13 @@ test("SCH-10 every field a job stores is listed in MongoDB's validator (it refus
     const hazardFields = Object.keys(job({ hazards: [sheetHazard()] }).toObject().hazards[0]);
     const hazardAllowed = Object.keys(jobsValidator.$jsonSchema.properties.hazards.items.properties);
     assert.deepEqual(hazardFields.filter((k) => !hazardAllowed.includes(k)), []);
+});
+
+test("SCH-11 a job's sheets: at most LIMITS.sheetsPerJob, and a job saved with one sheetId reads as sheetIds", () => {
+    const tooMany = Array.from({ length: LIMITS.sheetsPerJob + 1 }, (_, i) => `cu-${i}`);
+    assert.ok(errorsOf(job({ sheetIds: tooMany })).includes("sheetIds"));
+    assert.equal(jobsValidator.$jsonSchema.properties.sheetIds.maxItems, LIMITS.sheetsPerJob);
+    assert.deepEqual(job({ sheetId: "cu-732044" }).toJSON().sheetIds, ["cu-732044"]);
+    assert.deepEqual(job({ sheetIds: ["cu-766011", "cu-732044"] }).toJSON().sheetIds, ["cu-766011", "cu-732044"]);
+    assert.equal(job({ sheetId: "cu-732044" }).toJSON().sheetId, undefined);
 });

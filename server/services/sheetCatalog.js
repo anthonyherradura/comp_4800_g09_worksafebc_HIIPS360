@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { toCatalogEntry } from "../../src/data/sheets/catalog.js";
-import { sheetChecklist, sheetHazards } from "../../src/data/sheets/sheetContent.js";
+import { combineChecklists, sheetChecklist, sheetHazards } from "../../src/data/sheets/sheetContent.js";
 
 const SHEETS_DIR = fileURLToPath(new URL("../../src/data/sheets/", import.meta.url));
 
@@ -32,3 +32,6 @@ export function getSheetChecklist(sheetId) {
     if (!checklistCache.has(sheetId)) checklistCache.set(sheetId, sheetChecklist(byId.get(sheetId)));
     return checklistCache.get(sheetId);
 }
+
+// The checklist for a job with any number of sheets, the same as the app shows
+export const getJobChecklist = (sheetIds = []) => combineChecklists(sheetIds.map(getSheetChecklist));

@@ -11,7 +11,7 @@ const JobContext = createContext(null);
 // Saves that wait for typing to pause share one queue (`saveQueue`), and every other change flushes it first,
 // so changes reach the server in the order the officer made them.
 
-const summary = ({ id, label, sheetId, lastOpenedAt, createdAt, updatedAt }) => ({ id, label, sheetId, lastOpenedAt, createdAt, updatedAt });
+const summary = ({ id, label, sheetIds, lastOpenedAt, createdAt, updatedAt }) => ({ id, label, sheetIds, lastOpenedAt, createdAt, updatedAt });
 const newestFirst = (list) => [...list].sort((a, b) => String(b.lastOpenedAt).localeCompare(String(a.lastOpenedAt)));
 
 export function JobProvider({ children }) {
@@ -163,10 +163,10 @@ export function JobProvider({ children }) {
             return true;
         });
 
-    // Picks, changes or clears (null) the job's protocol sheet. The server syncs the hazards in the same save.
-    const setJobSheet = (id, sheetId) =>
+    // Sets the job's protocol sheets, in order ([] clears them). The server syncs the hazards in the same save.
+    const setJobSheets = (id, sheetIds) =>
         change(async () => {
-            const { job } = await api("PUT", `/jobs/${id}/sheet`, { sheetId });
+            const { job } = await api("PUT", `/jobs/${id}/sheets`, { sheetIds });
             replaceCurrentJob(job);
             return job.id;
         });
@@ -236,7 +236,7 @@ export function JobProvider({ children }) {
         addJob,
         openJob,
         deleteJob,
-        setJobSheet,
+        setJobSheets,
         setChecklistStatus,
         saveVisitNotes,
         saveError,

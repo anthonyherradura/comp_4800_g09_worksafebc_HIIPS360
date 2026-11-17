@@ -33,12 +33,13 @@ const hazard = {
 export const jobsValidator = {
     $jsonSchema: {
         bsonType: "object",
-        required: ["userId", "label", "sheetId", "checklist", "visitNotes", "visitNotesUpdatedAt", "hazards", "lastOpenedAt", "rev", "createdAt", "updatedAt"],
+        required: ["userId", "label", "checklist", "visitNotes", "visitNotesUpdatedAt", "hazards", "lastOpenedAt", "rev", "createdAt", "updatedAt"],
         properties: {
             _id: id,
             userId: id,
             label: str(LIMITS.labelChars, 1),
-            sheetId: { bsonType: ["string", "null"] },
+            sheetIds: { bsonType: "array", maxItems: LIMITS.sheetsPerJob, items: { bsonType: "string", minLength: 1 } },
+            sheetId: { bsonType: ["string", "null"] }, // jobs saved before a job could have several sheets
             checklist: { bsonType: "object", additionalProperties: { enum: [...CHECKLIST_STATUSES] } },
             visitNotes: str(LIMITS.visitNotesChars),
             visitNotesUpdatedAt: { bsonType: ["date", "null"] },

@@ -1,5 +1,5 @@
 import { toCatalogEntry } from "./catalog.js";
-import { sheetChecklist, sheetHazards } from "./sheetContent.js";
+import { combineChecklists, sheetChecklist, sheetHazards } from "./sheetContent.js";
 
 // Loads every sheet JSON in this folder. Drop a new one in and it shows up.
 const modules = import.meta.glob("./*.json", { eager: true });
@@ -23,3 +23,9 @@ export const getSheetHazard = (sheetId, key) => getSheetHazards(sheetId).find((h
 // The officer's checklist for the sheet: [{ id, group, label }]
 export const getSheetChecklist = (sheetId) =>
     byId[sheetId] ? (checklistCache[sheetId] ??= sheetChecklist(byId[sheetId])) : [];
+
+// The checklist for a job with any number of sheets (see combineChecklists)
+export const getJobChecklist = (sheetIds = []) => combineChecklists(sheetIds.map(getSheetChecklist));
+
+// "Log Transport", or "" for an unknown sheet
+export const sheetName = (sheetId) => SHEET_CATALOG.find((s) => s.sheetId === sheetId)?.name ?? "";

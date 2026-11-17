@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
 import { HAZARD_STATUS, STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
-import { getSheetHazard } from "../../data/sheets";
+import { getSheetHazard, sheetName } from "../../data/sheets";
 import { BackIcon, CameraPlusIcon, CloseIcon } from "./HazardIcons";
 import "./Hazard.css";
 
@@ -178,7 +178,9 @@ export default function HazardDetail() {
             </Link>
 
             <header className="hd-head">
-                {guidance?.stage && <p className="hd-kicker">{guidance.stage}</p>}
+                {guidance && (
+                    <p className="hd-kicker">{[sheetName(hazard.sheetId), guidance.stage].filter(Boolean).join(" · ")}</p>
+                )}
                 <h1 className="hd-name">{hazard.name}</h1>
                 {statusKey === HAZARD_STATUS.UNADDRESSED ? (
                     <div className="hd-callout" role="status">

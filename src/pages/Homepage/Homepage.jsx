@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { useJobs } from "../../context/JobContext";
-import { SHEET_CATALOG, getSheetChecklist, getSheetHazards } from "../../data/sheets";
+import { SHEET_CATALOG, getJobChecklist } from "../../data/sheets";
 import { matchesWords } from "../../data/sheets/catalog";
 import { shrinkImage } from "../../data/store";
 import useRecentSheets from "../../hooks/useRecentSheets";
-import { CameraPlusIcon } from "../Hazard/HazardIcons";
+import { CameraPlusIcon, CloseIcon } from "../Hazard/HazardIcons";
 import { matchSheets } from "./matchSheets";
 import "./Homepage.css";
 
@@ -50,7 +50,7 @@ const DocumentIcon = () => (
     </svg>
 );
 
-// One sheet in a list: tap to pick it for the job, tap again to clear it
+// One sheet in a list: tap to add it to the job, tap again to remove it
 function SheetOption({ sheet, reason, selected, onPick }) {
     return (
         <li>
@@ -75,10 +75,11 @@ function SheetOption({ sheet, reason, selected, onPick }) {
     );
 }
 
-// Home: pick the protocol sheet for the current job by name, by describing the work (Gemini) or from a photo.
-// PRD: reach the sheet for the work, and confirm or change the one offered.
+// Home: pick the protocol sheets for the current job by name, by describing the work (Gemini) or from a photo.
+// A job can have several (framing with a scaffold up the side). PRD: reach the sheet for the work, and confirm
+// or change the ones offered.
 export default function HomePage() {
-    const { currentJob, setJobSheet } = useJobs();
+    const { currentJob, setJobSheets } = useJobs();
     const [query, setQuery] = useState("");
     const [ai, setAi] = useState({ status: "idle" }); // idle | loading | done | error
     // Sheet ids, most recently viewed first. Saved on the officer's account.
@@ -87,7 +88,9 @@ export default function HomePage() {
 
     const email = user?.email?.trim().toLowerCase();
     const [recentIds, remember, recentLoaded] = useRecentSheets(email, MAX_RECENT);
-    const selected = byId[currentJob?.sheetId] ?? null;
+    const selectedIds = (currentJob?.sheetIds ?? []).filter((id) => byId[id]);
+    const selected = selectedIds.map((id) => byId[id]);
+    const isSelected = (sheetId) => selectedIds.includes(sheetId);
 
     const q = query.trim();
     const searching = q !== "";
@@ -101,17 +104,25 @@ export default function HomePage() {
     const otherSheets = hasRecent ? SHEET_CATALOG.filter((s) => !recentSheets.includes(s)) : [];
 
     // A job that already has a sheet counts as viewed, so the list is not empty for it.
-    const selectedId = selected?.sheetId;
+    const firstSelected = selectedIds[0];
     useEffect(() => {
-        if (recentLoaded && selectedId && !recentIds.includes(selectedId)) remember(selectedId);
-    }, [recentLoaded, selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (recentLoaded && firstSelected && !recentIds.includes(firstSelected)) remember(firstSelected);
+    }, [recentLoaded, firstSelected]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Picking a sheet fills the job's hazard list from it (and the Planning checklist reads it too)
+    // Adding a sheet loads its hazards into the job (and the Planning checklist reads it too); removing it takes
+    // away only the hazards nobody has worked on. The server does both in the same save.
     function pick(sheetId) {
-        const next = sheetId === selected?.sheetId ? null : sheetId;
-        setJobSheet(currentJob.id, next); // the server loads the sheet's hazards in the same save
-        if (next) remember(next);
+        const adding = !isSelected(sheetId);
+        setJobSheets(currentJob.id, adding ? [...selectedIds, sheetId] : selectedIds.filter((id) => id !== sheetId));
+        if (adding) remember(sheetId);
     }
+
+    const suggestedToAdd = aiMatches.map((m) => m.sheetId).filter((id) => !isSelected(id));
+    function addSuggested() {
+        setJobSheets(currentJob.id, [...selectedIds, ...suggestedToAdd]);
+        suggestedToAdd.forEach(remember);
+    }
+    const sheetHazardCount = (currentJob?.hazards ?? []).filter((h) => h.source === "sheet").length;
 
     async function ask({ text, photoFile }) {
         const id = ++requestId.current;
@@ -154,7 +165,7 @@ export default function HomePage() {
                     <Link className="home-card" to="/jobs">
                         <span className="home-card-text">
                             <span className="home-card-title">Select a job site first</span>
-                            <span className="home-card-desc">The protocol sheet is saved with the job</span>
+                            <span className="home-card-desc">The protocol sheets are saved with the job</span>
                         </span>
                         <span className="home-arrow" aria-hidden="true" />
                     </Link>
@@ -169,21 +180,44 @@ export default function HomePage() {
         <div className="page-content">
             <h1 className="home-title">What work are you inspecting?</h1>
 
-            {selected && (
+            {selected.length > 0 && (
                 <section className="home-selected" aria-labelledby="selected-heading">
                     <h2 id="selected-heading" className="home-selected-kicker">
-                        Protocol sheet for this job
+                        {selected.length === 1 ? "Protocol sheet for this job" : `Protocol sheets for this job (${selected.length})`}
                     </h2>
-                    <p className="home-selected-name">
-                        {selected.name} <span className="home-selected-cu">{selected.cu}</span>
-                    </p>
+                    <ul className="home-selected-sheets">
+                        {selected.map((s) => (
+                            <li key={s.sheetId} className="home-selected-sheet">
+                                <span className="home-selected-name">
+                                    {s.name} <span className="home-selected-cu">{s.cu}</span>
+                                </span>
+                                <a
+                                    className="home-selected-pdf"
+                                    href={`/sheets-pdf/${s.sheetId}.pdf`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    aria-label={`Open the ${s.name} sheet (PDF)`}
+                                >
+                                    <DocumentIcon />
+                                </a>
+                                <button
+                                    type="button"
+                                    className="home-selected-remove"
+                                    aria-label={`Remove ${s.name} from this job`}
+                                    onClick={() => pick(s.sheetId)}
+                                >
+                                    <CloseIcon />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
                                         <ul className="home-selected-links">
                         <li>
                             <Link to="/planning">
                                 <span className="home-link-icon"><ChecklistIcon /></span>
                                 <span className="home-card-text">
                                     <span className="home-card-title">
-                                        {plural(getSheetChecklist(selected.sheetId).length, "checklist item")}
+                                        {plural(getJobChecklist(selectedIds).length, "checklist item")}
                                     </span>
                                 </span>
                                 <span className="home-arrow" aria-hidden="true" />
@@ -194,21 +228,11 @@ export default function HomePage() {
                                 <span className="home-link-icon home-link-icon--warn"><WarningIcon /></span>
                                 <span className="home-card-text">
                                     <span className="home-card-title">
-                                        {plural(getSheetHazards(selected.sheetId).length, "hazard")} to review
+                                        {plural(sheetHazardCount, "hazard")} to review
                                     </span>
                                 </span>
                                 <span className="home-arrow" aria-hidden="true" />
                             </Link>
-                        </li>
-                        <li>
-                            <a href={`/sheets-pdf/${selected.sheetId}.pdf`} target="_blank" rel="noreferrer">
-                                <span className="home-link-icon"><DocumentIcon /></span>
-                                <span className="home-card-text">
-                                    <span className="home-card-title">Open the sheet (PDF)</span>
-                                    <span className="home-card-desc">Issued {selected.issued}</span>
-                                </span>
-                                <span className="home-arrow" aria-hidden="true" />
-                            </a>
                         </li>
                     </ul>
                 </section>
@@ -216,7 +240,7 @@ export default function HomePage() {
 
             <form className="home-box home-search" onSubmit={handleAsk} role="search">
                 <label className="home-search-label" htmlFor="home-query">
-                    {selected ? "Change sheet: search, or describe the work" : "Search sheets, or describe the work and ask AI"}
+                    {selected.length ? "Add another sheet: search, or describe the work" : "Search sheets, or describe the work and ask AI"}
                 </label>
                 <input
                     id="home-query"
@@ -263,17 +287,24 @@ export default function HomePage() {
                             No protocol sheet covers that work. Try describing it differently, or pick from the list.
                         </p>
                     ) : (
-                        <ul className="home-panel">
-                            {aiMatches.map((m) => (
-                                <SheetOption
-                                    key={m.sheetId}
-                                    sheet={byId[m.sheetId]}
-                                    reason={m.reason}
-                                    selected={m.sheetId === selected?.sheetId}
-                                    onPick={pick}
-                                />
-                            ))}
-                        </ul>
+                        <>
+                            <ul className="home-panel">
+                                {aiMatches.map((m) => (
+                                    <SheetOption
+                                        key={m.sheetId}
+                                        sheet={byId[m.sheetId]}
+                                        reason={m.reason}
+                                        selected={isSelected(m.sheetId)}
+                                        onPick={pick}
+                                    />
+                                ))}
+                            </ul>
+                            {aiMatches.length > 1 && suggestedToAdd.length > 0 && (
+                                <button type="button" className="home-add-all" onClick={addSuggested}>
+                                    Add {suggestedToAdd.length === aiMatches.length ? "all" : "the other"} {plural(suggestedToAdd.length, "suggested sheet")}
+                                </button>
+                            )}
+                        </>
                     )}
                 </section>
             )}
@@ -296,7 +327,7 @@ export default function HomePage() {
                     ) : (
                         <ul className="home-panel">
                             {listed.map((s) => (
-                                <SheetOption key={s.sheetId} sheet={s} selected={s.sheetId === selected?.sheetId} onPick={pick} />
+                                <SheetOption key={s.sheetId} sheet={s} selected={isSelected(s.sheetId)} onPick={pick} />
                             ))}
                         </ul>
                     )}
@@ -310,7 +341,7 @@ export default function HomePage() {
                     </h2>
                     <ul className="home-panel">
                         {otherSheets.map((s) => (
-                            <SheetOption key={s.sheetId} sheet={s} selected={s.sheetId === selected?.sheetId} onPick={pick} />
+                            <SheetOption key={s.sheetId} sheet={s} selected={isSelected(s.sheetId)} onPick={pick} />
                         ))}
                     </ul>
                 </section>

@@ -84,8 +84,8 @@ test("DB-01 a new job has every field the app reads, and no userId leaves the AP
     const job = await newJob(call, "  Oak   St. yard ");
     assert.equal(job.label, "Oak St. yard");
     assert.deepEqual(
-        [job.sheetId, job.checklist, job.visitNotes, job.visitNotesUpdatedAt, job.hazards],
-        [null, {}, "", null, []],
+        [job.sheetIds, job.checklist, job.visitNotes, job.visitNotesUpdatedAt, job.hazards],
+        [[], {}, "", null, []],
     );
     assert.match(job.id, /^[0-9a-f]{24}$/);
     assert.equal(job.userId, undefined);
@@ -151,7 +151,7 @@ test("DB-07 another officer gets 404 for every route on my job, hazard and photo
     const h = `${j}/hazards/${hazardId}`;
 
     const attempts = [
-        ["GET", j], ["POST", `${j}/open`], ["PUT", `${j}/sheet`, { sheetId: LOG }],
+        ["GET", j], ["POST", `${j}/open`], ["PUT", `${j}/sheets`, { sheetIds: [LOG] }],
         ["PUT", `${j}/visit-notes`, { visitNotes: "x" }], ["POST", `${j}/hazards`, { name: "Sneaky" }],
         ["PATCH", h, { comment: "x" }], ["POST", `${h}/photos`, photoForm(1)], ["DELETE", `${h}/photos/${photoId}`],
         ["DELETE", h], ["GET", `/photos/${photoId}`], ["DELETE", j],
@@ -161,7 +161,7 @@ test("DB-07 another officer gets 404 for every route on my job, hazard and photo
         assert.equal(res.status, 404, `${method} ${path} gave ${res.status}`);
     }
     const after = (await me("GET", j)).data.job;
-    assert.deepEqual(after, { ...after, label: "Mine", sheetId: null, visitNotes: "" });
+    assert.deepEqual(after, { ...after, label: "Mine", sheetIds: [], visitNotes: "" });
     assert.equal(after.hazards.length, 1);
     assert.equal(after.hazards[0].comment, "");
     assert.equal((await me("GET", `/photos/${photoId}`)).status, 200);
@@ -181,10 +181,10 @@ test("DB-08 signed out gets 401, and ids that aren't ObjectIds get 404", { skip 
 test("DB-09 picking Log Transport loads its 40 hazards in sheet order", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const res = await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG });
+    const res = await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] });
     assert.equal(res.status, 200);
     const { hazards } = res.data.job;
-    assert.equal(res.data.job.sheetId, LOG);
+    assert.deepEqual(res.data.job.sheetIds, [LOG]);
     assert.equal(hazards.length, 40);
     assert.ok(hazards.every((h) => h.source === "sheet" && h.sheetId === LOG && h.sheetKey && h.id));
     assert.equal(new Set(hazards.map((h) => h.sheetKey)).size, 40);
@@ -195,47 +195,47 @@ test("DB-09 picking Log Transport loads its 40 hazards in sheet order", { skip }
 test("DB-10 picking the same sheet again adds nothing and keeps the hazard ids", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const first = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job;
-    const second = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job;
+    const first = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job;
+    const second = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job;
     assert.deepEqual(second.hazards.map((h) => h.id), first.hazards.map((h) => h.id));
 });
 
 test("DB-11 changing sheet keeps worked-on hazards and the officer's own, drops untouched ones", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const loaded = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job.hazards;
+    const loaded = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job.hazards;
     const [commented, withPhoto, marked] = loaded;
     await call("PATCH", `/jobs/${job.id}/hazards/${commented.id}`, { comment: "Seen at gate" });
     await call("POST", `/jobs/${job.id}/hazards/${withPhoto.id}/photos`, photoForm(1));
     await call("PATCH", `/jobs/${job.id}/hazards/${marked.id}`, { notApplicable: true });
     const own = (await call("POST", `/jobs/${job.id}/hazards`, { name: "Loose ladder" })).data.hazardId;
 
-    const changed = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LTC })).data.job;
+    const changed = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LTC] })).data.job;
     const ids = changed.hazards.map((h) => h.id);
     for (const keep of [commented.id, withPhoto.id, marked.id, own]) assert.ok(ids.includes(keep));
     assert.equal(changed.hazards.filter((h) => h.sheetId === LOG).length, 3);
     assert.equal(changed.hazards.filter((h) => h.sheetId === LTC).length, 14);
     assert.equal(changed.hazards.length, 3 + 1 + 14);
 
-    const cleared = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: null })).data.job;
-    assert.equal(cleared.sheetId, null);
+    const cleared = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [] })).data.job;
+    assert.deepEqual(cleared.sheetIds, []);
     assert.equal(cleared.hazards.length, 4);
 });
 
 test("DB-12 an unknown sheet is refused", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    assert.equal((await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: "cu-000000" })).status, 400);
-    assert.equal((await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: 5 })).status, 400);
+    assert.equal((await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: ["cu-000000"] })).status, 400);
+    assert.equal((await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [5] })).status, 400);
 });
 
 test("DB-13 sheet changes racing a comment edit never lose the comment or duplicate hazards", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const loaded = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job.hazards;
+    const loaded = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job.hazards;
     // Sheet switches and comment edits all at once. A comment the server said it saved must survive:
     // a sync that read the job before the comment and wrote after it would wipe it out.
-    const sheets = Array.from({ length: 8 }, (_, i) => call("PUT", `/jobs/${job.id}/sheet`, { sheetId: i % 2 ? LOG : LTC }));
+    const sheets = Array.from({ length: 8 }, (_, i) => call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [i % 2 ? LOG : LTC] }));
     const edits = loaded.slice(0, 20).map((h, i) => call("PATCH", `/jobs/${job.id}/hazards/${h.id}`, { comment: `Note ${i}` }).then((r) => ({ r, h, i })));
     await Promise.all(sheets);
     const saved = (await Promise.all(edits)).filter(({ r }) => r.status === 200);
@@ -251,7 +251,7 @@ test("DB-13 sheet changes racing a comment edit never lose the comment or duplic
 test("DB-13b a change made between the sheet sync's read and its write is not overwritten", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const target = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job.hazards[0];
+    const target = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job.hazards[0];
 
     // The first time the route reads the job, a comment lands right after the read, before the write
     const realFindOne = Job.findOne;
@@ -270,7 +270,7 @@ test("DB-13b a change made between the sheet sync's read and its write is not ov
         return query;
     };
     try {
-        assert.equal((await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LTC })).status, 200);
+        assert.equal((await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LTC] })).status, 200);
     } finally {
         Job.findOne = realFindOne;
     }
@@ -279,12 +279,51 @@ test("DB-13b a change made between the sheet sync's read and its write is not ov
     assert.equal(kept?.comment, "Sneaked in", "the sync redid its work on the fresh copy, so the commented hazard stays");
 });
 
+test("DB-12b two sheets load together with no hazard twice, and removing one keeps the other's", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    const both = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG, LTC, LOG] })).data.job;
+    assert.deepEqual(both.sheetIds, [LOG, LTC], "a repeated sheet counts once");
+    const ltcNames = new Set(both.hazards.filter((h) => h.sheetId === LTC).map((h) => h.name.toLowerCase()));
+    assert.ok(both.hazards.filter((h) => h.sheetId === LOG).every((h) => !ltcNames.has(h.name.toLowerCase())), "no hazard from both sheets");
+    assert.equal(both.hazards.filter((h) => h.sheetId === LOG).length, 40);
+    assert.ok(both.hazards.some((h) => h.sheetId === LTC));
+
+    const ltcOnly = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LTC] })).data.job;
+    assert.deepEqual(ltcOnly.sheetIds, [LTC]);
+    assert.equal(ltcOnly.hazards.length, 14);
+    assert.ok(ltcOnly.hazards.every((h) => h.sheetId === LTC));
+});
+
+test("DB-12c the sheet list is checked: a list, known sheets, at most LIMITS.sheetsPerJob", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    assert.equal((await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: LOG })).status, 400);
+    assert.equal((await call("PUT", `/jobs/${job.id}/sheets`, {})).status, 400);
+    const tooMany = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG, LTC, "cu-761030", "cu-763025"] })).status;
+    assert.equal(tooMany, LIMITS.sheetsPerJob >= 4 ? 200 : 400);
+});
+
+test("DB-12d a job saved with the old single sheetId reads as sheetIds and still takes checklist answers", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    await Job.updateOne({ _id: job.id }, { $set: { sheetId: LOG }, $unset: { sheetIds: "" } });
+    const old = (await call("GET", `/jobs/${job.id}`)).data.job;
+    assert.deepEqual(old.sheetIds, [LOG]);
+    assert.equal(old.sheetId, undefined);
+    assert.equal((await call("PUT", `/jobs/${job.id}/checklist/cu-732044-062-1`, { status: "ready" })).status, 200);
+    const changed = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG, LTC] })).data.job;
+    assert.deepEqual(changed.sheetIds, [LOG, LTC]);
+    const raw = await Job.findById(job.id).lean();
+    assert.equal(raw.sheetId, undefined, "the old field is removed on the first change");
+});
+
 // ---------- checklist and visit notes ----------
 
 test("DB-14 checklist: ready and not-applicable are saved, pending removes the entry", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG });
+    await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] });
     const item = "cu-732044-062-1";
     let res = await call("PUT", `/jobs/${job.id}/checklist/${item}`, { status: "ready" });
     assert.deepEqual(res.data.job.checklist, { [item]: "ready" });
@@ -298,9 +337,12 @@ test("DB-15 checklist refuses unknown statuses and items that aren't on the job'
     const call = await officer();
     const job = await newJob(call);
     assert.equal((await call("PUT", `/jobs/${job.id}/checklist/cu-732044-062-1`, { status: "ready" })).status, 400, "no sheet yet");
-    await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG });
+    await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] });
     assert.equal((await call("PUT", `/jobs/${job.id}/checklist/cu-732044-062-1`, { status: "done" })).status, 400);
     assert.equal((await call("PUT", `/jobs/${job.id}/checklist/cu-766011-016-1`, { status: "ready" })).status, 400);
+    // ...until that sheet is on the job too
+    await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG, LTC] });
+    assert.equal((await call("PUT", `/jobs/${job.id}/checklist/cu-766011-016-1`, { status: "ready" })).status, 200);
     assert.equal((await call("PUT", `/jobs/${job.id}/checklist/$where`, { status: "ready" })).status, 400);
 });
 
@@ -453,7 +495,7 @@ test("DB-23 deleting a hazard or a job deletes its photos", { skip }, async () =
 test("DB-23b sheet hazards can't be deleted, officer hazards can", { skip }, async () => {
     const call = await officer();
     const job = await newJob(call);
-    const loaded = (await call("PUT", `/jobs/${job.id}/sheet`, { sheetId: LOG })).data.job.hazards;
+    const loaded = (await call("PUT", `/jobs/${job.id}/sheets`, { sheetIds: [LOG] })).data.job.hazards;
     const sheetHazard = loaded.find((h) => h.source === "sheet");
 
     const refused = await call("DELETE", `/jobs/${job.id}/hazards/${sheetHazard.id}`);

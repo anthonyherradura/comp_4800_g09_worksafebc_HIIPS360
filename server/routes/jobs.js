@@ -7,7 +7,7 @@
 //   GET    /api/jobs/:jobId                            -> { job }
 //   POST   /api/jobs/:jobId/open                       -> { job }    makes it the current job
 //   DELETE /api/jobs/:jobId                            -> 204        with its hazards and photos
-//   PUT    /api/jobs/:jobId/sheet    { sheetId|null }  -> { job }    picks/changes/clears the sheet and syncs the hazards
+//   PUT    /api/jobs/:jobId/sheets   { sheetIds }      -> { job }    sets the job's sheets (in order, [] clears) and syncs the hazards
 //   PUT    /api/jobs/:jobId/checklist/:itemId { status } -> { job }  "pending" | "ready" | "not-applicable"
 //   PUT    /api/jobs/:jobId/visit-notes { visitNotes } -> { job }
 //   POST   /api/jobs/:jobId/hazards  { name, comment? } -> 201 { job, hazardId }
@@ -19,10 +19,10 @@ import { Router } from "express";
 import mongoose from "mongoose";
 import multer from "multer";
 import requireAuth from "../middleware/requireAuth.js";
-import Job, { LABEL_COLLATION } from "../models/Job.js";
+import Job, { LABEL_COLLATION, jobSheetIds } from "../models/Job.js";
 import Photo from "../models/Photo.js";
 import { CHECKLIST_STATUSES, LIMITS, PHOTO_TYPES } from "../db/limits.js";
-import { getSheetChecklist, getSheetHazards, sheetExists } from "../services/sheetCatalog.js";
+import { getJobChecklist, getSheetHazards, sheetExists } from "../services/sheetCatalog.js";
 import { syncSheetHazards } from "../../src/data/syncSheetHazards.js";
 import { checkIds, notFound } from "./ids.js";
 
@@ -47,7 +47,7 @@ const cleanLabel = (value) => (typeof value === "string" ? value.trim().replace(
 router.get("/", async (req, res) => {
     const jobs = await Job.find({ userId: req.userId })
         .sort({ lastOpenedAt: -1 })
-        .select("label sheetId lastOpenedAt createdAt updatedAt");
+        .select("label sheetIds sheetId lastOpenedAt createdAt updatedAt");
     res.json({ jobs: jobs.map((j) => j.toJSON()) });
 });
 
@@ -90,24 +90,29 @@ router.delete("/:jobId", async (req, res) => {
     res.status(204).end();
 });
 
-// Picks, changes or clears the sheet. The new sheetId and the synced hazards are written in one update to one
-// document, so they can't disagree. If the job changed after it was read (rev moved), the sync is redone on the
-// fresh copy instead of overwriting that change.
-router.put("/:jobId/sheet", async (req, res) => {
-    const sheetId = req.body?.sheetId ?? null;
-    if (sheetId !== null && (typeof sheetId !== "string" || !sheetExists(sheetId))) return bad(res, "That protocol sheet doesn't exist.");
+// Sets the job's sheets: add one, remove one, or clear them all. The sheet list and the synced hazards are written
+// in one update to one document, so they can't disagree. If the job changed after it was read (rev moved), the
+// sync is redone on the fresh copy instead of overwriting that change.
+router.put("/:jobId/sheets", async (req, res) => {
+    const asked = req.body?.sheetIds;
+    if (!Array.isArray(asked)) return bad(res, "Send the job's sheets as a list.");
+    if (asked.some((id) => typeof id !== "string" || !sheetExists(id))) return bad(res, "That protocol sheet doesn't exist.");
+    const sheetIds = [...new Set(asked)];
+    if (sheetIds.length > LIMITS.sheetsPerJob) return bad(res, `A job can have at most ${LIMITS.sheetsPerJob} protocol sheets.`);
+    const sheets = sheetIds.map((sheetId) => ({ sheetId, hazards: getSheetHazards(sheetId) }));
 
     for (let attempt = 1; attempt <= SYNC_ATTEMPTS; attempt++) {
         const job = await Job.findOne(mine(req)).lean();
         if (!job) return notFound(res, "Job");
 
-        const hazards = syncSheetHazards(job.hazards, { sheetId, sheetHazards: getSheetHazards(sheetId) })
+        const hazards = syncSheetHazards(job.hazards, { sheets })
             .map((h) => (h._id ? h : { _id: new ObjectId(), ...h }));
         if (hazards.length > LIMITS.hazardsPerJob) {
-            return bad(res, `This sheet would take the job over ${LIMITS.hazardsPerJob} hazards.`);
+            return bad(res, `These sheets would take the job over ${LIMITS.hazardsPerJob} hazards.`);
         }
 
-        const saved = await Job.findOneAndUpdate({ ...mine(req), rev: job.rev }, { $set: { sheetId, hazards } }, UPDATE);
+        const update = { $set: { sheetIds, hazards }, $unset: { sheetId: "" } };
+        const saved = await Job.findOneAndUpdate({ ...mine(req), rev: job.rev }, update, UPDATE);
         if (saved) return sendJob(res, saved);
     }
     res.status(409).json({ error: "This job is being changed somewhere else. Try again." });
@@ -118,14 +123,15 @@ router.put("/:jobId/checklist/:itemId", async (req, res) => {
     const status = req.body?.status;
     if (status !== "pending" && !CHECKLIST_STATUSES.includes(status)) return bad(res, "Unknown checklist status.");
 
-    const job = await Job.findOne(mine(req)).select("sheetId").lean();
+    const job = await Job.findOne(mine(req)).select("sheetIds sheetId").lean();
     if (!job) return notFound(res, "Job");
-    if (!getSheetChecklist(job.sheetId).some((item) => item.id === itemId)) return bad(res, "That item isn't on this job's checklist.");
+    if (!getJobChecklist(jobSheetIds(job)).some((item) => item.id === itemId)) return bad(res, "That item isn't on this job's checklist.");
 
     const path = `checklist.${itemId}`;
     const update = status === "pending" ? { $unset: { [path]: "" } } : { $set: { [path]: status } };
-    // Only if the sheet is still the one the item belongs to
-    const saved = await Job.findOneAndUpdate({ ...mine(req), sheetId: job.sheetId }, update, UPDATE);
+    // Only if the sheets are still the ones the item was checked against
+    const sameSheets = job.sheetIds ? { sheetIds: job.sheetIds } : { sheetIds: { $exists: false }, sheetId: job.sheetId ?? null };
+    const saved = await Job.findOneAndUpdate({ ...mine(req), ...sameSheets }, update, UPDATE);
     return saved ? sendJob(res, saved) : res.status(409).json({ error: "The protocol sheet changed. Reload and try again." });
 });
 

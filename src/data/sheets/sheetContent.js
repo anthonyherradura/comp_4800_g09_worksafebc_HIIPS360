@@ -191,3 +191,15 @@ export function sheetChecklist(sheet) {
     }
     return items;
 }
+
+// One checklist for a job with several sheets: each sheet's items in turn, with an item another sheet already
+// listed in the same group (e.g. "Safety footwear" under Before you go) left out. lists: [[{ id, group, label }]]
+export function combineChecklists(lists) {
+    const seen = new Set();
+    return lists.flat().filter((item) => {
+        const key = `${item.group}|${item.label.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}

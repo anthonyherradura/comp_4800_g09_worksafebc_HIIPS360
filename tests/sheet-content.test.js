@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { sheetChecklist, sheetHazards } from "../src/data/sheets/sheetContent.js";
+import { combineChecklists, sheetChecklist, sheetHazards } from "../src/data/sheets/sheetContent.js";
 import { syncSheetHazards } from "../src/data/syncSheetHazards.js";
 
 const readSheet = (file) => JSON.parse(readFileSync(new URL(`../src/data/sheets/${file}.json`, import.meta.url)));
@@ -104,7 +104,9 @@ const A = [{ key: "a1", name: "Hazard A1", stage: "Loading" }, { key: "a2", name
 const B = [{ key: "b1", name: "Hazard B1", stage: null }];
 let counter = 0;
 const withIds = (hazards) => hazards.map((h) => (h.id ? h : { id: `h${++counter}`, ...h }));
-const sync = (hazards, sheetId, sheet) => withIds(syncSheetHazards(hazards, { sheetId, sheetHazards: sheet, now }));
+const sync = (hazards, sheetId, sheet) =>
+    withIds(syncSheetHazards(hazards, { sheets: sheetId ? [{ sheetId, hazards: sheet }] : [], now }));
+const syncAll = (hazards, sheets) => withIds(syncSheetHazards(hazards, { sheets, now }));
 
 test("SYNC-01 picking a sheet adds its hazards, marked as from the sheet (the stage stays on the sheet)", () => {
     const result = sync([], "sheet-a", A);
@@ -136,4 +138,36 @@ test("SYNC-04 photos or not applicable also count as work; clearing the sheet ke
 test("SYNC-05 a comment of only spaces doesn't count as work", () => {
     const [a1] = sync([], "sheet-a", A.slice(0, 1));
     assert.deepEqual(sync([{ ...a1, comment: "   " }], null, []), []);
+});
+
+test("SYNC-06 two sheets: both load in order, and a hazard both list is added once, from the first", () => {
+    const C = [{ key: "c1", name: "Working alone." }, { key: "c2", name: "Hazard C2" }];
+    const D = [{ key: "d1", name: "Hazard D1" }, { key: "d2", name: "working ALONE" }];
+    const both = syncAll([], [{ sheetId: "c", hazards: C }, { sheetId: "d", hazards: D }]);
+    assert.deepEqual(both.map((h) => `${h.sheetId}/${h.sheetKey}`), ["c/c1", "c/c2", "d/d1"]);
+    assert.deepEqual(syncAll(both, [{ sheetId: "c", hazards: C }, { sheetId: "d", hazards: D }]), both, "nothing changes on a repeat");
+
+    // Removing c: its untouched hazards go, and d brings back the hazard both list
+    const dOnly = syncAll(both, [{ sheetId: "d", hazards: D }]);
+    assert.deepEqual(dOnly.map((h) => `${h.sheetId}/${h.sheetKey}`), ["d/d1", "d/d2"]);
+});
+
+test("SYNC-07 removing a sheet keeps its worked-on hazard, and the other sheet doesn't add a second copy", () => {
+    const C = [{ key: "c1", name: "Working alone" }];
+    const D = [{ key: "d1", name: "Working alone" }];
+    const [c1] = syncAll([], [{ sheetId: "c", hazards: C }, { sheetId: "d", hazards: D }]);
+    const result = syncAll([{ ...c1, comment: "Night shift" }], [{ sheetId: "d", hazards: D }]);
+    assert.deepEqual(result.map((h) => [h.sheetId, h.comment]), [["c", "Night shift"]]);
+});
+
+test("CON-10 a job's checklist combines its sheets and leaves out an item another sheet already listed", () => {
+    const a = [{ id: "a-1", group: "Before you go", label: "Safety footwear" }, { id: "a-2", group: "On arrival", label: "Sign in" }];
+    const b = [{ id: "b-1", group: "Before you go", label: "Safety  footwear." }, { id: "b-2", group: "Before you go", label: "Hard hat" }];
+    assert.deepEqual(combineChecklists([a, b]).map((i) => i.id), ["a-1", "a-2", "b-2"]);
+    assert.deepEqual(combineChecklists([]), []);
+});
+
+test("SYNC-08 the same name twice on one sheet (two stages) stays twice", () => {
+    const E = [{ key: "e1", name: "Load shift" }, { key: "e2", name: "Load shift" }];
+    assert.equal(syncAll([], [{ sheetId: "e", hazards: E }]).length, 2);
 });

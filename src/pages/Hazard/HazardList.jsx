@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
 import { HAZARD_STATUS, STATUS_LABEL, groupByStatus, photoCount } from "../../data/hazardStatus";
-import { getSheetHazard } from "../../data/sheets";
+import { getSheetHazard, sheetName } from "../../data/sheets";
 import { formatFindings } from "./formatFindings";
 import "./Hazard.css";
 
@@ -42,6 +42,8 @@ export default function HazardList() {
     }, [exportMessage]);
 
     const groups = groupByStatus(hazards);
+    // With more than one sheet on the job, each sheet hazard says which sheet it came from
+    const severalSheets = new Set(hazards.filter((h) => h.source === "sheet").map((h) => h.sheetId)).size > 1;
     const current = TABS.find((t) => t.status === tab);
     const list = groups[tab];
 
@@ -128,6 +130,9 @@ export default function HazardList() {
                                             <span className="hl-name">{h.name}</span>
                                             {getSheetHazard(h.sheetId, h.sheetKey)?.notTypical && (
                                                 <span className="hl-note">Sheet says not typical</span>
+                                            )}
+                                            {severalSheets && h.source === "sheet" && (
+                                                <span className="hl-meta">{sheetName(h.sheetId)}</span>
                                             )}
                                             <span className="hl-meta">
                                                 {tab === HAZARD_STATUS.REVIEWED && photoCount(h.photos.length)}

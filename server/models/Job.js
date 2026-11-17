@@ -38,7 +38,10 @@ const jobSchema = new mongoose.Schema(
     {
         userId: { type: ObjectId, ref: "User", required: true },
         label: { type: String, required: true, trim: true, minlength: 1, maxlength: LIMITS.labelChars },
-        sheetId: { type: String, default: null },
+        // The job's protocol sheets, in the order they were added. Jobs saved before a job could have several
+        // have `sheetId` instead; jobSheetIds() reads either, and the next sheet change replaces it.
+        sheetIds: { type: [String], default: [], validate: maxItems(LIMITS.sheetsPerJob, "sheets per job") },
+        sheetId: { type: String, default: undefined },
         // Planning checklist: item id -> "ready" | "not-applicable". Missing means "To review".
         checklist: { type: Map, of: { type: String, enum: CHECKLIST_STATUSES }, default: () => ({}) },
         visitNotes: { type: String, default: "", maxlength: LIMITS.visitNotesChars },
@@ -63,8 +66,13 @@ jobSchema.pre(["updateOne", "findOneAndUpdate", "updateMany"], function bumpRev(
     update.$inc = { ...update.$inc, rev: 1 };
 });
 
-// What the app receives: ids as strings under `id`, no userId
+// A job's sheets, for a job saved either way (see sheetIds above). Works on documents and lean objects.
+export const jobSheetIds = (job) => (job.sheetIds?.length ? [...job.sheetIds] : job.sheetId ? [job.sheetId] : []);
+
+// What the app receives: ids as strings under `id`, no userId, and always `sheetIds`
 const toClient = (doc, ret) => {
+    ret.sheetIds = jobSheetIds(ret);
+    delete ret.sheetId;
     ret.id = String(ret._id);
     delete ret._id;
     delete ret.userId;

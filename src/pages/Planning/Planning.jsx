@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useJobs } from "../../context/JobContext";
-import { SHEET_CATALOG, getSheetChecklist } from "../../data/sheets";
+import { getJobChecklist, sheetName } from "../../data/sheets";
 import "./Planning.css";
 
 const STATUSES = [
@@ -75,11 +75,12 @@ export default function PlanningPage() {
     };
         const [openGroup, setOpenGroup] = useState(""); // every group starts closed; "" means none open
 
-    // The checklist comes from the job's protocol sheet; its progress is saved on the job
-    const items = getSheetChecklist(currentJob?.sheetId);
+    // The checklist comes from the job's protocol sheets; its progress is saved on the job
+    const sheetIds = currentJob?.sheetIds ?? [];
+    const items = getJobChecklist(sheetIds);
     const statuses = currentJob?.checklist ?? {};
     const groups = [...new Set(items.map((item) => item.group))];
-    const sheet = SHEET_CATALOG.find((s) => s.sheetId === currentJob?.sheetId);
+    const title = sheetIds.length === 1 ? `${sheetName(sheetIds[0])} checklist` : "Checklist";
 
     const statusOf = (item) => statuses[item.id] || "pending";
     const doneCount = items.filter((item) => statusOf(item) !== "pending").length;
@@ -92,8 +93,8 @@ export default function PlanningPage() {
 
             {items.length === 0 ? (
                 <p className="planning-card planning-empty">
-                    {currentJob?.sheetId ? (
-                        "This protocol sheet has no preparation items."
+                    {sheetIds.length ? (
+                        "These protocol sheets have no preparation items."
                     ) : (
                         <>
                             Pick a protocol sheet on <Link to="/home">Home</Link> to load what to check before you go
@@ -105,7 +106,7 @@ export default function PlanningPage() {
                 <>
                     <div className="planning-progress">
                         <p className="planning-progress-text">
-                            {sheet ? `${sheet.name} checklist` : "Checklist"} · {doneCount} of {items.length} done
+                            {title} · {doneCount} of {items.length} done
                         </p>
                         <div
                             className="planning-bar"

@@ -11,6 +11,7 @@ export const LIMITS = Object.freeze({
     commentChars: 5000,
     visitNotesChars: 5000,
     recentSheets: 3,
+    sheetsPerJob: 5,
 });
 
 export const PHOTO_TYPES = Object.freeze(["image/jpeg", "image/png", "image/webp"]);
