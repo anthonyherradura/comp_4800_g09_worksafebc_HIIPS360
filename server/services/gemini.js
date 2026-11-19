@@ -1,15 +1,16 @@
 // Talks to Gemini. The API key stays on the server (never in the frontend bundle).
 import { GoogleGenAI } from "@google/genai";
 
-// Override in .env with GEMINI_MODEL if this name is retired: https://ai.google.dev/gemini-api/docs/models
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+// The defaults are the models .env.example sets (the team's Nov 2026 benchmark), so a host that leaves the
+// variables unset runs the tested models. Override in .env if a name is retired: https://ai.google.dev/gemini-api/docs/models
+const MODEL = process.env.GEMINI_MODEL || "gemma-4-26b-a4b-it";
 // Raced against MODEL when it is slow or fails (outage, quota, retired name). Set GEMINI_FALLBACK_MODEL= (empty) to turn off.
-const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash";
+const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.1-flash-lite";
 // Third in line, with its own quota. Set GEMINI_SECOND_FALLBACK_MODEL= (empty) to turn off.
-const SECOND_FALLBACK_MODEL = process.env.GEMINI_SECOND_FALLBACK_MODEL ?? "gemini-flash-lite-latest";
+const SECOND_FALLBACK_MODEL = process.env.GEMINI_SECOND_FALLBACK_MODEL ?? "gemini-3.5-flash-lite";
 
 // The answers are short, so skip the model's thinking step (cuts ~4 s to ~1-2 s).
-// Every model must support the "minimal" level (Gemini 3.5 / 3.6 Flash and flash-lite-latest do; 3.7+ don't).
+// Every model must support the "minimal" level (the three defaults above do, and so does 3.6 Flash; 3.7+ don't).
 const THINKING = { thinkingLevel: "minimal" };
 // If a model hasn't answered by then, start the next one too and take whichever answers first.
 // B-12: a lower GEMINI_HEDGE_MS answers sooner when a model is slow, but uses quota on two models (B-11),
