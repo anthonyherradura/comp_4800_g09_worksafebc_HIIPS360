@@ -3,11 +3,13 @@ import mongoose from "mongoose";
 import config from "./config.js";
 import { createApp } from "./app.js";
 import { applySchema } from "./db/setup.js";
+import { hidePassword } from "./db/uri.js";
 
 try {
     await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 5000 });
 } catch (err) {
-    console.error(`Could not connect to MongoDB at ${config.mongoUri}. Is the MongoDB service running?`);
+    // A hosted database's URI carries its password, and the host keeps these logs
+    console.error(`Could not connect to MongoDB at ${hidePassword(config.mongoUri)}. Is the MongoDB service running?`);
     console.error(err.message);
     process.exit(1);
 }
