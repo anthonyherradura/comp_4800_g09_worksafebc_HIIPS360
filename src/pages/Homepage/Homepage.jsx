@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
+import { useHazards } from "../../context/HazardContext";
 import { useJobs } from "../../context/JobContext";
 import { SHEET_CATALOG, getJobChecklist } from "../../data/sheets";
 import { matchesWords } from "../../data/sheets/catalog";
+import { HAZARD_STATUS, getHazardStatus } from "../../data/hazardStatus";
 import { shrinkImage } from "../../data/store";
 import useRecentSheets from "../../hooks/useRecentSheets";
 import { CameraPlusIcon, CloseIcon } from "../Hazard/HazardIcons";
@@ -80,6 +82,7 @@ function SheetOption({ sheet, reason, selected, onPick }) {
 // or change the ones offered.
 export default function HomePage() {
     const { currentJob, setJobSheets } = useJobs();
+    const { hazards } = useHazards();
     const [query, setQuery] = useState("");
     const [ai, setAi] = useState({ status: "idle" }); // idle | loading | done | error
     // Sheet ids, most recently viewed first. Saved on the officer's account.
@@ -122,7 +125,9 @@ export default function HomePage() {
         setJobSheets(currentJob.id, [...selectedIds, ...suggestedToAdd]);
         suggestedToAdd.forEach(remember);
     }
-    const sheetHazardCount = (currentJob?.hazards ?? []).filter((h) => h.source === "sheet").length;
+    // Still to do: no photo and not marked not applicable, whether it came from a sheet or the officer logged it.
+    // From HazardContext, which has photo URLs and unsaved Not applicable taps (the job's own hazards have neither).
+    const toReview = hazards.filter((h) => getHazardStatus(h) === HAZARD_STATUS.UNADDRESSED).length;
 
     async function ask({ text, photoFile }) {
         const id = ++requestId.current;
@@ -228,7 +233,7 @@ export default function HomePage() {
                                 <span className="home-link-icon home-link-icon--warn"><WarningIcon /></span>
                                 <span className="home-card-text">
                                     <span className="home-card-title">
-                                        {plural(sheetHazardCount, "hazard")} to review
+                                        {toReview ? `${plural(toReview, "hazard")} to review` : "No hazards left to review"}
                                     </span>
                                 </span>
                                 <span className="home-arrow" aria-hidden="true" />
