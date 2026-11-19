@@ -9,7 +9,7 @@ HIIPS360 is a BCIT student prototype (Fall 2026) for WorkSafeBC: a mobile-first 
 Product rules from the README that should shape the code:
 - **Suggestion, not decision.** Everything the tool proposes (matched sheet, hazards) must be confirmable, editable or dismissible by the officer.
 - **Reachable without the photo.** Sheets must also be reachable by browsing, since photo matching can fail.
-- **Offline first is deferred.** The team has decided device-first storage and sync are not a priority. Persistence goes to MongoDB through the API (Mongoose models + `requireAuth` routes). Don't add Dexie or sync logic unless the sprint asks for it. What stays on the device: the cached session, the PWA shell and the offline search model. Saving needs a connection. A failed save shows a message under the header; comments and visit notes stay on screen and are retried every 15 seconds, held in memory only.
+- **Offline first is deferred.** The team has decided device-first storage and sync are not a priority. Persistence goes to MongoDB through the API (Mongoose models + `requireAuth` routes). Don't add Dexie or sync logic unless the sprint asks for it. What stays on the device: the cached session and the PWA shell. Saving needs a connection. A failed save shows a message under the header; comments and visit notes stay on screen and are retried every 15 seconds, held in memory only.
 - **Says what it is.** The UI should state plainly that this is a prototype.
 
 ## Commands
@@ -50,14 +50,15 @@ Hazard and sheet suggestions need `GEMINI_API_KEY` (each developer uses their ow
 
 ### Sheet data pipeline (rarely needed)
 
-The sheet JSON, the search model and the embeddings are already committed. Re-run these only when adding a sheet PDF:
+The sheet JSON is already committed. Re-run this only when adding a sheet PDF:
 1. `python scripts/extract_sheets.py sheets-pdf src/data/sheets` (needs `pdfplumber`). It copies text word for word into chunks.
 2. Put the PDF in `public/sheets-pdf/<sheetId>.pdf` (linked from Home and `/pdfs`).
-3. `node scripts/download-model.mjs` (once, into `public/models/`), `node scripts/copy-ort.mjs` (into `public/ort/`), then `node scripts/build-embeddings.mjs` to rewrite `src/data/embeddings.json`.
+
+The offline sheet search (`/sheets`, MiniSearch + MiniLM embeddings, `public/models`, `public/ort`) was removed in Nov 2026: Home replaced it on Nov 2 (edf1deb) and nothing linked to it. It is in git history if it's ever wanted again.
 
 ## Architecture
 
-The stack is Vite + React 19 + `react-router-dom` v7, written in plain JSX (no TypeScript). The backend is Express 5 + Mongoose, as ESM. Check `package.json` before assuming a dependency exists: `idb-keyval`, `minisearch` and `@huggingface/transformers` are installed; Dexie and Bootstrap/`wsbc.css` are not (`wsbc.css` comes from WorkSafeBC's CDN in `index.html`).
+The stack is Vite + React 19 + `react-router-dom` v7, written in plain JSX (no TypeScript). The backend is Express 5 + Mongoose, as ESM. Check `package.json` before assuming a dependency exists: `idb-keyval` is installed; Dexie and Bootstrap/`wsbc.css` are not (`wsbc.css` comes from WorkSafeBC's CDN in `index.html`).
 
 ### What is stored where
 
@@ -87,7 +88,6 @@ Older versions kept jobs in localStorage and hazards/photos in IndexedDB. `clear
 - **Planning visit notes** are shown from `currentJob.visitNotes`, with unconfirmed drafts applied by `JobContext`. Don't keep a second copy in the page: it goes stale when the page remounts.
 - `src/data/hazardStatus.js`: hazard status (`unaddressed`, `reviewed`, `na`) is derived, never stored. `notApplicable` wins, then any photo counts as reviewed. Use `getHazardStatus`/`groupByStatus`.
 - **Hazards** (`/hazard`) is also the summary. It records findings only and never states compliance (PRD hard limits 1 and 2). "Copy findings" is plain text for the officer's own report.
-- `src/search/sheetSearch.js`: offline hybrid search over sheet chunks, merging MiniSearch keyword matches with MiniLM embeddings by reciprocal rank fusion. Keyword search still works if the model fails to load. It is only used on `/sheets`, which nothing in the app links to. Matches below `MIN_SIMILARITY` are hidden. Duplicates are dropped by `src/search/dedupeResults.js` (B-18): searching every sheet lists each sheet once, with a link to the rest of its matches, and inside one sheet a passage repeated word for word is listed once.
 - `src/pages/Hazard/suggestHazard.js` and `src/pages/Homepage/matchSheets.js` are the only files that call `/api/ai`. Both post `FormData` (`text`, `photo`) and throw Errors with messages that are safe to show.
 - `src/auth/`: `authService.js` is the only file that talks to `/api/auth`. The last signed-in user is cached in localStorage so an officer with no signal stays signed in, and a real 401 clears it. A sign-out that can't reach the server leaves `hiips360.signOutPending`, and `getSession` ends the server session before anything else, so on a shared device the next reload can't sign the previous officer back in (B-13). `validation.js` is shared by the browser **and** the server, so keep it free of browser APIs.
 - `src/data/store.js` has `newId()`. Use it instead of `crypto.randomUUID()`, which only exists over HTTPS/localhost and breaks when testing on a phone over LAN HTTP.
@@ -116,8 +116,8 @@ The UI follows the WorkSafeBC UX/UI Design System (README, "UI and design system
 
 ## Gotchas
 
-- Import paths are case-sensitive on Linux/CI but not on Windows, where this team develops. The component `HomePage` lives in `Homepage/Homepage.jsx`. `App.jsx` also declares `/sheets` and `/sheets/:sheetId` twice.
-- The service worker precaches only `js`, `css` and `html` (`workbox.globPatterns` in `vite.config.js`). Keep it that way: the onnxruntime `.wasm` files are 17–28 MB each, over Workbox's 2 MiB limit, and matching them fails `npm run build` (B-14). `npm run build` and `npm run lint` both pass on `main` (B-14, B-15 fixed Nov 2026).
+- Import paths are case-sensitive on Linux/CI but not on Windows, where this team develops. The component `HomePage` lives in `Homepage/Homepage.jsx`.
+- The service worker precaches only `js`, `css` and `html` (`workbox.globPatterns` in `vite.config.js`). Keep it that way: a file over Workbox's 2 MiB limit fails `npm run build` (B-14). `npm run build` and `npm run lint` both pass on `main` (B-14, B-15 fixed Nov 2026).
 - Known bugs are tracked in the team's Google Sheet `S3_TestingLog_G09` (Test Cases, Test Runs, Bugs; IDs `TC-nn` and `B-nn`). Code comments and commits refer to those IDs.
 - `npm run dev:api` uses `node --watch`, which also restarts when files in `node_modules` change (e.g. right after `npm install`). A 502 just after startup usually means the API is mid-restart; wait for "MongoDB connected".
 - Use `mongodb://127.0.0.1`, not `localhost`, in `MONGODB_URI`. Node tries IPv6 `::1` first, and the Windows mongod only listens on IPv4.

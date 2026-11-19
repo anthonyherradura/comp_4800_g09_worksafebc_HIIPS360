@@ -15,7 +15,6 @@ import HazardList from "./pages/Hazard/HazardList";
 import HazardAdd from "./pages/Hazard/HazardAdd";
 import HazardDetail from "./pages/Hazard/HazardDetail";
 import PdfsPage from "./pages/Pdfs/PdfsPage";
-import SheetsPage from "./pages/Sheets/SheetsPage";
 
 export default function App() {
   return (
@@ -50,8 +49,6 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/home" element={<HomePage />} />
               <Route path="/planning" element={<PlanningPage />} />
-              <Route path="/sheets" element={<SheetsPage />} />
-              <Route path="/sheets/:sheetId" element={<SheetsPage />} />
               <Route path="/pdfs" element={<PdfsPage />} />
               <Route path="/hazard" element={<HazardList />} />
               <Route path="/hazard/new" element={<HazardAdd />} />
