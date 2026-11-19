@@ -1,4 +1,4 @@
-import { HAZARD_STATUS, STATUS_LABEL, groupByStatus, photoCount } from "../../data/hazardStatus";
+import { HAZARD_STATUS, STATUS_LABEL, groupByStatus, photoCount } from "../../data/hazardStatus.js";
 
 // Reviewed first, then what's still to do, then not applicable
 const ORDER = [HAZARD_STATUS.REVIEWED, HAZARD_STATUS.UNADDRESSED, HAZARD_STATUS.NOT_APPLICABLE];
@@ -123,6 +123,12 @@ export async function formatFindings(hazards, now = new Date()) {
 
     write("Findings only. HIIPS360 never says whether a site complies.", { size: 9, color: [110, 100, 90] });
 
-    const date = now.toISOString().slice(0, 10);
-    doc.save(`hazard-findings-${date}.pdf`);
+    doc.save(findingsFileName(now));
+}
+
+// The officer's own date, like the stamp inside the PDF. toISOString() is UTC, which in BC is already
+// tomorrow from 4 or 5 pm (B-32).
+export function findingsFileName(now = new Date()) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `hazard-findings-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.pdf`;
 }
