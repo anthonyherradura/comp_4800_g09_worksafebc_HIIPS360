@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
 import { HAZARD_STATUS, STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
 import { getSheetHazard, sheetName } from "../../data/sheets";
@@ -117,6 +117,14 @@ export default function HazardDetail() {
     const [uploading, setUploading] = useState(0); // photo uploads still going
     const [saving, setSaving] = useState(false);
     const [saveFailed, setSaveFailed] = useState(false);
+    // B-25: a photo added to a Not applicable hazard switches it back, with an Undo in case it was the wrong one.
+    // Log hazard's "Add to this hazard" does the same and says so through the route state.
+    const location = useLocation();
+    const [reapplied, setReapplied] = useState(Boolean(location.state?.reapplied));
+    useEffect(() => {
+        // Shown once: a reload or Back later shouldn't bring the message back
+        if (location.state?.reapplied) navigate(location.pathname, { replace: true, state: null });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Just deleted here: the list is about to show
     if (!hazard && deleting) return null;
@@ -141,9 +149,24 @@ export default function HazardDetail() {
         const files = Array.from(e.target.files || []);
         e.target.value = "";
         if (!files.length) return;
+        const wasNotApplicable = Boolean(hazard.notApplicable);
         setUploading((n) => n + 1);
-        await addPhotos(id, files.map((f) => URL.createObjectURL(f)));
+        const added = await addPhotos(id, files.map((f) => URL.createObjectURL(f)));
         setUploading((n) => n - 1);
+        if (added && wasNotApplicable) {
+            updateHazard(id, { notApplicable: false });
+            setReapplied(true);
+        }
+    };
+
+    const toggleNotApplicable = () => {
+        setReapplied(false);
+        updateHazard(id, { notApplicable: !hazard.notApplicable });
+    };
+
+    const undoReapply = () => {
+        setReapplied(false);
+        updateHazard(id, { notApplicable: true });
     };
 
     // Autosave keeps running; this waits until the server has everything, then goes back to the list
@@ -298,11 +321,19 @@ export default function HazardDetail() {
                         type="button"
                         className="btn hd-na"
                         aria-pressed={Boolean(hazard.notApplicable)}
-                        onClick={() => updateHazard(id, { notApplicable: !hazard.notApplicable })}
+                        onClick={toggleNotApplicable}
                     >
                         {hazard.notApplicable ? "Mark as applicable" : "Not applicable"}
                     </button>
                 </div>
+                {reapplied && !hazard.notApplicable && (
+                    <div className="hd-reapplied" role="status">
+                        <p>Marked applicable again because you added a photo.</p>
+                        <button type="button" className="hd-undo" onClick={undoReapply}>
+                            Undo
+                        </button>
+                    </div>
+                )}
                 {saveFailed && (
                     <p className="hd-save-error" role="alert">
                         Not saved yet. Your changes are kept here and will be tried again when you have a connection.

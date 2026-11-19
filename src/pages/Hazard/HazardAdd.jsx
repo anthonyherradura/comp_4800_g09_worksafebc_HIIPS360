@@ -125,9 +125,15 @@ export default function HazardAdd() {
         if (!name || saving) return;
         const note = prompt.trim();
         if (match) {
-            if (note) updateHazard(match.id, { comment: match.comment ? `${match.comment}\n${note}` : note });
+            // B-25: a photo is evidence, so a Not applicable hazard becomes applicable again (the detail page
+            // says so and offers Undo). A note alone leaves its status as it was.
+            const reapplied = Boolean(photo && match.notApplicable);
+            const changes = {};
+            if (note) changes.comment = match.comment ? `${match.comment}\n${note}` : note;
+            if (reapplied) changes.notApplicable = false;
+            if (Object.keys(changes).length) updateHazard(match.id, changes);
             if (photo) addPhotos(match.id, [photo]);
-            navigate(`/hazard/${match.id}`);
+            navigate(`/hazard/${match.id}`, reapplied ? { state: { reapplied: true } } : undefined);
             return;
         }
         setSaving(true);
