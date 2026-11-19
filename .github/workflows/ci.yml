@@ -1,0 +1,38 @@
+# Checks every push and pull request on Linux, where import paths are case-sensitive and npm ci
+# installs Linux builds of the native packages (TC-90). The team develops on Windows, so this is
+# the only place a Linux-only break shows up before deploying.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mongo:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+
+      # The jobs/photos API against a real MongoDB (TC-101). No Gemini key is needed: those tests mock it.
+      - run: npm run test:db
+        env:
+          MONGODB_TEST_URI: mongodb://127.0.0.1:27017
