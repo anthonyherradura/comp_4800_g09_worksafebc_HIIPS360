@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { combineChecklists, sheetChecklist, sheetHazards } from "../src/data/sheets/sheetContent.js";
+import { cleanText, combineChecklists, sheetChecklist, sheetHazards } from "../src/data/sheets/sheetContent.js";
 import { syncSheetHazards } from "../src/data/syncSheetHazards.js";
 
 const readSheet = (file) => JSON.parse(readFileSync(new URL(`../src/data/sheets/${file}.json`, import.meta.url)));
@@ -170,4 +170,17 @@ test("CON-10 a job's checklist combines its sheets and leaves out an item anothe
 test("SYNC-08 the same name twice on one sheet (two stages) stays twice", () => {
     const E = [{ key: "e1", name: "Load shift" }, { key: "e2", name: "Load shift" }];
     assert.equal(syncAll([], [{ sheetId: "e", hazards: E }]).length, 2);
+});
+
+test("CON-11 a word the PDF broke at a hyphen is joined again (B-30)", () => {
+    assert.equal(cleanText("Radiation – non- ionizing"), "Radiation – non-ionizing");
+    assert.equal(cleanText("may require de- energization"), "may require de-energization");
+    // A real "pre- and post-" keeps its space, and the en dash between stage and topic is untouched
+    assert.equal(cleanText("pre- and post-shift checks"), "pre- and post-shift checks");
+    assert.equal(cleanText("Site Prep – Driver Orientation"), "Site Prep – Driver Orientation");
+    const names = sheetHazards(performingArts).map((h) => h.name);
+    assert.ok(names.includes("Radiation – non-ionizing"));
+    const everything = [logTransport, longTermCare, performingArts, motionPicture].flatMap((s) =>
+        sheetHazards(s).flatMap((h) => [h.name, ...h.details, ...h.controls]));
+    assert.deepEqual(everything.filter((t) => /\p{L}- (?!(and|or|to)\b)\p{Ll}/u.test(t)), []);
 });

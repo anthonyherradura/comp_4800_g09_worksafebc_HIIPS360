@@ -11,8 +11,12 @@ const BULLET = "•";
 // The PDF's sub-bullets and symbols came through as private-use characters (U+E000 to U+F8FF)
 const PRIVATE_USE = /[\uE000-\uF8FF]/g;
 
+// A word the PDF broke at a hyphen keeps a space after it: "non- ionizing", "de- energization" (B-30).
+// "pre- and post-shift" is real English, so a hyphen before and/or/to keeps its space.
+const BROKEN_HYPHEN = /(\p{L})- (?!(?:and|or|to)\b)(?=\p{Ll})/gu;
+
 export function cleanText(text) {
-    return text.replace(PRIVATE_USE, "").replace(/[ \t]+/g, " ").trim();
+    return text.replace(PRIVATE_USE, "").replace(/[ \t]+/g, " ").replace(BROKEN_HYPHEN, "$1-").trim();
 }
 
 // "• one\n• two" -> ["one", "two"]. A line without a bullet continues the item above it.
