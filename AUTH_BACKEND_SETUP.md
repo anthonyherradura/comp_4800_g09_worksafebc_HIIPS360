@@ -2,7 +2,7 @@
 
 How to get the HIIPS360 API and database running on your own machine, so sign-in works when you run the app.
 
-Everything runs **locally**. You don't need a MongoDB Atlas account or any online service. Each of us has our own database on our own laptop, so accounts you create aren't shared with the rest of the group.
+The database runs **locally**: you don't need a MongoDB Atlas account. Each of us has our own database on our own laptop, so accounts you create aren't shared with the rest of the group. The only online service is Gemini, for the AI suggestions (your own key, see the README). Deploying is covered in the README's **Deploying** section.
 
 ## What's in the repo
 
@@ -116,7 +116,7 @@ You should see the account you just made. Each document also has a `passwordHash
 
 Job sites, hazards, photos, the Planning checklist, visit notes and recently viewed sheets are saved in MongoDB through the API. A plain local MongoDB is enough: no replica set or other extra setup. (If you set up the `rs0` replica set for the earlier design, you can leave it. Everything still works.)
 
-1. From the project folder, create the collections, their rules and indexes:
+1. Nothing to run: the API creates the collections, their rules and indexes itself every time it starts. To do it by hand, or to see whether collections from the old database design are left over:
    ```cmd
    npm run db:setup
    ```
@@ -132,9 +132,9 @@ Job sites, hazards, photos, the Planning checklist, visit notes and recently vie
    ```
    `npm run test:db` uses its own throwaway `hiips360_test_…` database and deletes it afterwards, so your data isn't touched.
 
-**After pulling new changes**, run `npm install` and then `npm run db:setup` again. It updates the database rules and indexes without touching your data.
+**After pulling new changes**, run `npm install` and restart the API. It updates the database rules and indexes without touching your data.
 
-**Changing a limit** (hazards per job, photos per hazard, text lengths): edit the number in `server/db/limits.js`, run `npm run db:setup`, then restart the API.
+**Changing a limit** (hazards per job, photos per hazard, text lengths): edit the number in `server/db/limits.js`, then restart the API.
 
 **First start after this change:** the app deletes the job sites, hazards and photos that older versions kept in the browser (a one-time fresh start the team agreed on). Your account stays.
 
@@ -165,5 +165,6 @@ To delete **all** your local data, job sites and photos included, and start fres
 
 ```powershell
 npx mongosh hiips360 --quiet --eval "db.dropDatabase()"
-npm run db:setup
 ```
+
+Then restart the API, which sets the database up again.
