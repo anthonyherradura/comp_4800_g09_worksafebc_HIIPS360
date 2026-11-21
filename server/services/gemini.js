@@ -152,11 +152,17 @@ function parseHazardMatch(raw, model, known) {
     }
     const suggestion = parseHazard(String(answer?.name ?? ""), model);
     const found = suggestion.toLowerCase() !== "no hazard identified";
-    return {
+    const result = {
         suggestion,
         matchId: found && known.has(answer?.matchId) ? answer.matchId : null,
         description: found ? describeHazard(answer) : "",
     };
+    // A new hazard with only a name is what the client found unhelpful (Nov 2026 demo feedback), so let the
+    // other models try for a write-up. If none does, firstAnswer still returns this one.
+    if (found && !result.matchId && !result.description) {
+        throw Object.assign(new Error(`Gemini's answer had no write-up (${model})`), { partial: result });
+    }
+    return result;
 }
 
 // The observation, then the concerns as a list, as plain text the officer can edit
@@ -189,7 +195,8 @@ function parseSheetMatches(raw, model, known) {
 }
 
 // Starts the first model; starts the next one when the current one fails or HEDGE_AFTER_MS passes.
-// Resolves with the first answer and cancels the rest; rejects once every model has failed.
+// Resolves with the first answer and cancels the rest; rejects once every model has failed. A parse error that
+// carries `partial` (an incomplete but usable answer) moves on to the next model, and that answer is used if none does better.
 // If a model was out of quota (429), the rejection has code "BUSY", and daily: true when waiting a minute won't help (B-11).
 // request: { parts, config (systemInstruction etc.), parse(rawText, model) -> answer or throws }
 function firstAnswer(request) {
@@ -204,8 +211,10 @@ function firstAnswer(request) {
         let hedgeTimer;
         let minuteQuotaHit = false;
         let dayQuotaHit = false;
+        let partial = null; // a usable but incomplete answer (err.partial), returned if no model does better
 
         const fail = (err) => {
+            if (partial) return finish(resolve, partial);
             if (!minuteQuotaHit && !dayQuotaHit) return finish(reject, err);
             const busy = new Error(`Gemini quota used up: ${err.message.slice(0, 300)}`);
             finish(reject, Object.assign(busy, { code: "BUSY", daily: !minuteQuotaHit }));
@@ -239,6 +248,7 @@ function firstAnswer(request) {
                     if (done) return;
                     // The fallback model would get the same unreadable photo, so don't spend quota on it
                     if (err.code === "BAD_PHOTO") return finish(reject, err);
+                    if (err.partial) partial ??= err.partial;
                     console.warn(`Gemini model ${model} failed:`, err.message.slice(0, 300));
                     // 429 RESOURCE_EXHAUSTED: the per-minute allowance is back within a minute, the per-day one isn't
                     if (err.status === 429) {

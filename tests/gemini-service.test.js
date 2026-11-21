@@ -290,7 +290,7 @@ test("GEM-21 suggestHazardMatch: an answer that isn't JSON counts as a failure a
 });
 
 test("GEM-22 every prompt tells Gemini to answer in English (B-23)", async (t) => {
-    setup(t, { "primary-model": json({ name: "Blocked Exit", matchId: "", matches: [] }) });
+    setup(t, { "primary-model": json({ name: "Blocked Exit", matchId: "", observation: "An exit is blocked.", matches: [] }) });
     await suggestHazard({ text: "x" }).catch(() => {});
     await suggestHazardMatch({ text: "x", hazards: JOB_HAZARDS });
     await matchSheets({ text: "x", sheets: SHEETS });
@@ -322,6 +322,50 @@ test("GEM-23 suggestHazardMatch writes up a new hazard: observation, then up to 
     );
     assert.match(calls[0].contents[0].text, /None yet/);
     assert.match(calls[0].config.systemInstruction, /Never say that anything is a violation/);
+});
+
+const WRITE_UP = { observation: "A worker is on a roof edge.", concerns: [{ topic: "Fall protection", detail: "Check tie-off." }] };
+
+test("GEM-29 a new hazard with only a name: the next model is tried at once and its write-up is used", async (t) => {
+    setup(t, {
+        "primary-model": json({ name: "Roof Edge", matchId: "", observation: "", concerns: [] }),
+        "backup-model": json({ name: "Unprotected Roof Edge", matchId: "", ...WRITE_UP }),
+    });
+    const answer = await suggestHazardMatch({ text: "roof", hazards: [] });
+    assert.equal(answer.suggestion, "Unprotected Roof Edge");
+    assert.match(answer.description, /^A worker is on a roof edge\.\n\nPossible concerns to confirm:\n- Fall protection: Check tie-off\.$/);
+    assert.deepEqual(calls.map((c) => c.model), ["primary-model", "backup-model"]);
+});
+
+test("GEM-30 no model writes it up: the name-only answer is still returned, not an error", async (t) => {
+    setup(t, {
+        "primary-model": json({ name: "Roof Edge", matchId: "", observation: " ", concerns: [] }),
+        "backup-model": fails("503 high demand"),
+        "third-model": fails("404 model not found"),
+    });
+    assert.deepEqual(await suggestHazardMatch({ text: "roof", hazards: [] }), {
+        suggestion: "Roof Edge",
+        matchId: null,
+        description: "",
+    });
+});
+
+test("GEM-31 name-only answer and the other models hang: it is returned at the 8 s timeout", async (t) => {
+    setup(t, {
+        "primary-model": json({ name: "Roof Edge", matchId: "" }),
+        "backup-model": hangs(),
+        "third-model": hangs(),
+    });
+    const pending = suggestHazardMatch({ text: "roof", hazards: [] });
+    await new Promise(setImmediate);
+    t.mock.timers.tick(8_000);
+    assert.equal((await pending).suggestion, "Roof Edge");
+});
+
+test("GEM-32 a match without a write-up is used at once: the write-up only shows for a new hazard", async (t) => {
+    setup(t, { "primary-model": json({ name: "Falls From Roofs", matchId: "h1" }), "backup-model": answers("unused") });
+    assert.equal((await suggestHazardMatch({ text: "roof", hazards: JOB_HAZARDS })).matchId, "h1");
+    assert.deepEqual(calls.map((c) => c.model), ["primary-model"]);
 });
 
 test("GEM-24 suggestHazardMatch: no hazard identified means no description and no match", async (t) => {

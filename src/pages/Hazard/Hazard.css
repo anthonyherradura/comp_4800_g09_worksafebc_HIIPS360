@@ -790,12 +790,15 @@
     flex: 1;
     min-height: 48px;
     /* B-08: 48px glove target */
+    padding-inline: 12px;
     border-radius: 6px;
     text-transform: none;
     font-family: var(--font-body);
 }
 
 .ha-actions .btn-orange {
+    flex: 2;
+    /* "Add to this hazard" fits on one line on a phone */
     color: var(--wsbc-black);
     /* white on orange is only 2.4:1 */
 }
@@ -804,20 +807,6 @@
     background: var(--wsbc-silver-grey);
     border-color: var(--wsbc-silver-grey);
     color: var(--wsbc-bodycopy);
-}
-
-.ha-actions--match {
-    flex-direction: column;
-}
-
-.ha-new {
-    background: var(--wsbc-white);
-    border: 2px solid var(--wsbc-orange);
-    color: var(--wsbc-black);
-}
-
-.ha-new:hover {
-    background: var(--wsbc-pale-sunrise-yellow);
 }
 
 /* ---------- Focus and motion ---------- */

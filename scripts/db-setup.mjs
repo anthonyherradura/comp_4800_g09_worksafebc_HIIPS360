@@ -17,7 +17,16 @@ try {
     process.exit(1);
 }
 
-for (const line of await applySchema()) console.log(`  ${line}`);
+// Railway runs this before every deploy, so a database user that may not change validators (collMod) must not
+// fail the deploy and leave the old version live: keep the existing validators and still build the indexes,
+// the same as the API does when it starts.
+try {
+    for (const line of await applySchema()) console.log(`  ${line}`);
+} catch (err) {
+    console.warn(`Couldn't update MongoDB's validators, so the existing ones stay: ${err.message}`);
+    await mongoose.syncIndexes();
+    console.log("  indexes built");
+}
 
 const old = await oldCollectionsPresent();
 if (old.length) {
