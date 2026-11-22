@@ -2,6 +2,9 @@
 // Plain ESM with no Vite features, so the server (server/services/sheetCatalog.js) imports it too.
 
 const SUMMARY_CHARS = 400;
+const searchTerms = {
+    "cu-763025": ["film", "movie"],
+};
 
 // "Log Transport (CU 732044)" -> { name: "Log Transport", cu: "CU 732044" }
 export function splitTitle(title) {
@@ -28,9 +31,10 @@ export function toCatalogEntry(sheet) {
     };
 }
 
-// Word search: every word typed must appear in the name, CU number or summary
+// Each word must appear in the catalogue text or the sheet's everyday search terms.
 export function matchesWords(entry, query) {
     const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const haystack = `${entry.name} ${entry.cu} ${entry.summary}`.toLowerCase();
+    const aliases = searchTerms[entry.sheetId] ?? [];
+    const haystack = [entry.name, entry.cu, entry.summary, ...aliases].join(" ").toLowerCase();
     return words.every((w) => haystack.includes(w));
 }

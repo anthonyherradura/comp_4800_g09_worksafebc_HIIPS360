@@ -133,7 +133,6 @@
 .hl-card:focus-visible,
 .hl-add:focus-visible,
 .ha-close:focus-visible,
-.ha-mic:focus-visible,
 .ha-input:focus-visible,
 .ha-send:focus-visible,
 .hd-back:focus-visible,
@@ -545,17 +544,10 @@
     /* B-07: warm grey was 4.39:1 on the ash-grey drop zone */
 }
 
-/* ---------- Description + mic ---------- */
-.ha-prompt {
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
-    margin: 0;
-}
-
+/* ---------- Description ---------- */
 .ha-input {
-    flex: 1;
-    min-width: 0;
+    box-sizing: border-box;
+    width: 100%;
     height: auto;
     min-height: 56px;
     padding: 9px 12px;
@@ -571,18 +563,6 @@
 
 .ha-input::placeholder {
     color: var(--wsbc-warm-grey);
-}
-
-.ha-mic {
-    flex-shrink: 0;
-    width: 52px;
-    height: auto;
-    padding: 14px;
-    border: none;
-    border-radius: 6px;
-    background: var(--wsbc-silver-grey);
-    color: var(--wsbc-bodycopy);
-    cursor: pointer;
 }
 
 /* ---------- Get suggestion button: three phases ---------- */
@@ -812,7 +792,6 @@
 /* ---------- Focus and motion ---------- */
 .ha-input:focus-visible,
 .ha-suggest-input:focus-visible,
-.ha-mic:focus-visible,
 .ha-send:focus-visible,
 .ha-drop:focus-within {
     outline: 3px solid var(--wsbc-black);
@@ -838,8 +817,7 @@
     cursor: pointer;
 }
 
-.ha-close svg,
-.ha-mic svg {
+.ha-close svg {
     width: 100%;
     height: 100%;
 }

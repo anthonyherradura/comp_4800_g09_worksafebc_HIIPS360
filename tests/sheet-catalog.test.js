@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { matchesWords, splitTitle, toCatalogEntry } from "../src/data/sheets/catalog.js";
+import motionPicture from "../src/data/sheets/cu-763025-motion-picture.json" with { type: "json" };
 
 const sheet = {
     sheetId: "cu-732044",
@@ -16,6 +17,15 @@ const sheet = {
 test("CAT-01 splits the CU number out of the title", () => {
     assert.deepEqual(splitTitle("Log Transport (CU 732044)"), { name: "Log Transport", cu: "CU 732044" });
     assert.deepEqual(splitTitle("No number here"), { name: "No number here", cu: "" });
+});
+
+test("B-29 Home finds Motion Picture by its everyday names as well as catalogue words", () => {
+    const motion = toCatalogEntry(motionPicture);
+    for (const query of ["film", "MOVIE", "film 763025"]) {
+        assert.ok(matchesWords(motion, query), query);
+        assert.ok(!matchesWords(toCatalogEntry(sheet), query), query);
+    }
+    assert.ok(!matchesWords(motion, "movie nursing"));
 });
 
 test("CAT-02 catalogue entry: summary is the information section, dates use dashes", () => {

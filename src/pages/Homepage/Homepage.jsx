@@ -326,7 +326,7 @@ export default function HomePage() {
                     {listed.length === 0 ? (
                         <p className="home-box home-panel-note">
                             {searching
-                                ? "No sheet names match. Tap Ask AI to search by what the work is."
+                                ? "No sheets match those words. Tap Ask AI to search by what the work is."
                                 : "No protocol sheets found."}
                         </p>
                     ) : (

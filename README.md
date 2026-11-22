@@ -142,7 +142,7 @@ The prototype covers the whole MVP flow, from picking a job site to a findings P
 |---|---|
 | Working offline (saving on the device, then syncing) | Deferred by the team. Saving needs a connection; unsaved comments stay on screen and are retried. |
 | Regulation text | A hazard shows what its sheet says about the legislation and the sections it cites. It doesn't open or quote the regulation itself. |
-| Voice input on Log hazard | The microphone button is there but does nothing yet. |
+| Voice input on Log hazard | Deferred. Officers can type a description or attach a photo. |
 | Only 4 sheets | Log Transport, Long-term Care, Motion Picture / TV Production and Performing Arts. Adding a sheet is described under [Working on the code](#working-on-the-code). |
 
 Known bugs and test results are in the team's Testing Log (Google Sheet, IDs `TC-nn` for tests and `B-nn` for bugs).

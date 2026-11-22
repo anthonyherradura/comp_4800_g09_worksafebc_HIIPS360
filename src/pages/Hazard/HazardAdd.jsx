@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
-import { CameraPlusIcon, MicIcon, CloseIcon } from "./HazardIcons";
+import { CameraPlusIcon, CloseIcon } from "./HazardIcons";
 import { suggestHazard } from "./suggestHazard";
 import "./Hazard.css";
 
@@ -184,27 +184,22 @@ export default function HazardAdd() {
                 <h2 className="ha-label" id="ha-describe-label">
                     Describe it
                 </h2>
-                <div className="ha-prompt">
-                    <textarea
-                        className="ha-input"
-                        rows={2}
-                        placeholder="e.g. Ladder at a steep angle, not tied off"
-                        aria-labelledby="ha-describe-label"
-                        maxLength={500}
-                        value={prompt}
-                        disabled={suggesting}
-                        onChange={handlePrompt}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault(); // Enter asks for a suggestion, it doesn't accept
-                                handleSend();
-                            }
-                        }}
-                    />
-                    <button type="button" className="ha-mic" aria-label="Voice input">
-                        <MicIcon />
-                    </button>
-                </div>
+                <textarea
+                    className="ha-input"
+                    rows={2}
+                    placeholder="e.g. Ladder at a steep angle, not tied off"
+                    aria-labelledby="ha-describe-label"
+                    maxLength={500}
+                    value={prompt}
+                    disabled={suggesting}
+                    onChange={handlePrompt}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault(); // Enter asks for a suggestion, it doesn't accept
+                            handleSend();
+                        }
+                    }}
+                />
             </section>
 
             <button
