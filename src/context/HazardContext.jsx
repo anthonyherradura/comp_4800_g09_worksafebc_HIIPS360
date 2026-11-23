@@ -18,8 +18,10 @@ async function toBlob(input) {
 // Comment edits show at once and save when typing pauses. Until the server confirms them they are kept
 // as drafts on top of the job, so another change's answer can't put old text back in the box. A save that
 // fails keeps its draft, so what was typed stays on screen, and it is tried again.
+//
+// A finished inspection (FEAT-7) is read-only: every change below does nothing for it.
 export function HazardProvider({ children }) {
-    const { currentJob, saveQueue, change, replaceCurrentJob, confirmSavedJob, reloadCurrentJob, reportError } = useJobs();
+    const { currentJob, isFinished, saveQueue, change, replaceCurrentJob, confirmSavedJob, reloadCurrentJob, reportError } = useJobs();
     const jobId = currentJob?.id ?? null;
     const [drafts, setDrafts] = useState({}); // hazard id -> { comment?, notApplicable? } not yet confirmed
     const unsent = useRef({}); // hazard id -> newest fields the server hasn't confirmed, for the save queue to send
@@ -55,8 +57,9 @@ export function HazardProvider({ children }) {
         });
     };
 
-    const addPhotos = (id, inputs) =>
-        change(async () => {
+    const addPhotos = (id, inputs) => {
+        if (isFinished) return Promise.resolve(null);
+        return change(async () => {
             const body = new FormData();
             for (const input of inputs) {
                 try {
@@ -72,9 +75,11 @@ export function HazardProvider({ children }) {
             replaceCurrentJob(job);
             return id;
         });
+    };
 
     // Resolves to the new hazard's id, or null if it couldn't be saved
     const addHazard = async ({ name, photo, comment = "" }) => {
+        if (isFinished) return null;
         const id = await change(async () => {
             const { job, hazardId } = await api("POST", `/jobs/${jobId}/hazards`, { name, comment });
             replaceCurrentJob(job);
@@ -87,6 +92,7 @@ export function HazardProvider({ children }) {
     // changes: { comment?, notApplicable?, photos? }. A photos list means "keep only these", so photos missing
     // from it are deleted.
     const updateHazard = (id, changes) => {
+        if (isFinished) return;
         const { photos, ...fields } = changes;
         const hazard = hazards.find((h) => h.id === id);
 
@@ -108,10 +114,10 @@ export function HazardProvider({ children }) {
                         settle(id, sent);
                     })
                     .catch((err) => {
-                        reportError(err);
-                        if (err.status === 404) {
-                            forget(id); // the hazard is gone, so show what the server has
-                            reloadCurrentJob();
+                        reportError(err); // a 423 (finished somewhere else) also reloads the job
+                        if (err.status === 404 || err.status === 423) {
+                            forget(id); // the hazard is gone or locked, so show what the server has
+                            if (err.status === 404) reloadCurrentJob();
                         } else if (isTemporaryFailure(err)) {
                             saveQueue.retryLater(key, save);
                         }
@@ -136,13 +142,15 @@ export function HazardProvider({ children }) {
         }
     };
 
-    const deleteHazard = (id) =>
-        change(async () => {
+    const deleteHazard = (id) => {
+        if (isFinished) return Promise.resolve(null);
+        return change(async () => {
             const { job } = await api("DELETE", `/jobs/${jobId}/hazards/${id}`);
             forget(id);
             replaceCurrentJob(job);
             return id;
         });
+    };
 
     // Save hazard: sends anything still waiting for this hazard and resolves true once the server has all of it.
     // A failed save stays as a draft (and is retried), so false means "kept on screen, not saved yet".

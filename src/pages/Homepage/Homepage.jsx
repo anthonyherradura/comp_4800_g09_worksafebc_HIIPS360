@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { useHazards } from "../../context/HazardContext";
+import ReadOnlyBanner from "../../components/ReadOnlyBanner";
 import { useJobs } from "../../context/JobContext";
 import { SHEET_CATALOG, getJobChecklist } from "../../data/sheets";
 import { matchesWords } from "../../data/sheets/catalog";
@@ -79,9 +80,9 @@ function SheetOption({ sheet, reason, selected, onPick }) {
 
 // Home: pick the protocol sheets for the current job by name, by describing the work (Gemini) or from a photo.
 // A job can have several (framing with a scaffold up the side). PRD: reach the sheet for the work, and confirm
-// or change the ones offered.
+// or change the ones offered. A finished inspection (FEAT-7) shows its sheets only: no ×, search or picking.
 export default function HomePage() {
-    const { currentJob, setJobSheets } = useJobs();
+    const { currentJob, isFinished, setJobSheets } = useJobs();
     const { hazards } = useHazards();
     const [query, setQuery] = useState("");
     const [ai, setAi] = useState({ status: "idle" }); // idle | loading | done | error
@@ -115,6 +116,7 @@ export default function HomePage() {
     // Adding a sheet loads its hazards into the job (and the Planning checklist reads it too); removing it takes
     // away only the hazards nobody has worked on. The server does both in the same save.
     function pick(sheetId) {
+        if (isFinished) return;
         const adding = !isSelected(sheetId);
         setJobSheets(currentJob.id, adding ? [...selectedIds, sheetId] : selectedIds.filter((id) => id !== sheetId));
         if (adding) remember(sheetId);
@@ -122,6 +124,7 @@ export default function HomePage() {
 
     const suggestedToAdd = aiMatches.map((m) => m.sheetId).filter((id) => !isSelected(id));
     function addSuggested() {
+        if (isFinished) return;
         setJobSheets(currentJob.id, [...selectedIds, ...suggestedToAdd]);
         suggestedToAdd.forEach(remember);
     }
@@ -184,6 +187,11 @@ export default function HomePage() {
     return (
         <div className="page-content">
             <h1 className="home-title">What work are you inspecting?</h1>
+            {isFinished && (
+                <ReadOnlyBanner finishedAt={currentJob.finishedAt}>
+                    {selected.length ? "Its protocol sheets can't be changed." : "No protocol sheet was picked for it."}
+                </ReadOnlyBanner>
+            )}
 
             {selected.length > 0 && (
                 <section className="home-selected" aria-labelledby="selected-heading">
@@ -205,14 +213,16 @@ export default function HomePage() {
                                 >
                                     <DocumentIcon />
                                 </a>
-                                <button
-                                    type="button"
-                                    className="home-selected-remove"
-                                    aria-label={`Remove ${s.name} from this job`}
-                                    onClick={() => pick(s.sheetId)}
-                                >
-                                    <CloseIcon />
-                                </button>
+                                {!isFinished && (
+                                    <button
+                                        type="button"
+                                        className="home-selected-remove"
+                                        aria-label={`Remove ${s.name} from this job`}
+                                        onClick={() => pick(s.sheetId)}
+                                    >
+                                        <CloseIcon />
+                                    </button>
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -243,42 +253,45 @@ export default function HomePage() {
                 </section>
             )}
 
-            <form className="home-box home-search" onSubmit={handleAsk} role="search">
-                <label className="home-search-label" htmlFor="home-query">
-                    {selected.length ? "Add another sheet: search, or describe the work" : "Search sheets, or describe the work and ask AI"}
-                </label>
-                <input
-                    id="home-query"
-                    className="home-input"
-                    type="search"
-                    maxLength={500}
-                    value={query}
-                    onChange={handleQueryChange}
-                    placeholder="Sheet name, CU number or the work"
-                    enterKeyHint="search"
-                />
-                <div className="home-actions">
-                    <label className={`home-action home-photo${loading ? " is-disabled" : ""}`}>
-                        <CameraPlusIcon />
-                        <span>From a photo</span>
-                        <input
-                            className="home-visually-hidden"
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            capture="environment"
-                            aria-label="Match a protocol sheet from a photo of the worksite"
-                            disabled={loading}
-                            onChange={handlePhoto}
-                        />
+            {/* Picking sheets: not on a finished inspection */}
+            {!isFinished && (
+                <form className="home-box home-search" onSubmit={handleAsk} role="search">
+                    <label className="home-search-label" htmlFor="home-query">
+                        {selected.length ? "Add another sheet: search, or describe the work" : "Search sheets, or describe the work and ask AI"}
                     </label>
-                    <button type="submit" className="home-action home-send" disabled={!query.trim() || loading}>
-                        <SparkleIcon />
-                        <span>Ask AI</span>
-                    </button>
-                </div>
-            </form>
+                    <input
+                        id="home-query"
+                        className="home-input"
+                        type="search"
+                        maxLength={500}
+                        value={query}
+                        onChange={handleQueryChange}
+                        placeholder="Sheet name, CU number or the work"
+                        enterKeyHint="search"
+                    />
+                    <div className="home-actions">
+                        <label className={`home-action home-photo${loading ? " is-disabled" : ""}`}>
+                            <CameraPlusIcon />
+                            <span>From a photo</span>
+                            <input
+                                className="home-visually-hidden"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                capture="environment"
+                                aria-label="Match a protocol sheet from a photo of the worksite"
+                                disabled={loading}
+                                onChange={handlePhoto}
+                            />
+                        </label>
+                        <button type="submit" className="home-action home-send" disabled={!query.trim() || loading}>
+                            <SparkleIcon />
+                            <span>Ask AI</span>
+                        </button>
+                    </div>
+                </form>
+            )}
 
-            {ai.status !== "idle" && (
+            {!isFinished && ai.status !== "idle" && (
                 <section aria-labelledby="ai-heading" aria-live="polite">
                     <h2 id="ai-heading" className="home-section-heading">
                         {ai.fromPhoto ? "Suggested from your photo" : "Suggested by AI"}
@@ -314,7 +327,7 @@ export default function HomePage() {
                 </section>
             )}
 
-            {listReady && (
+            {!isFinished && listReady && (
                 <section aria-labelledby="sheets-heading">
                     <h2 id="sheets-heading" className="home-section-heading">
                         {searching
@@ -339,7 +352,7 @@ export default function HomePage() {
                 </section>
             )}
 
-            {listReady && !searching && otherSheets.length > 0 && (
+            {!isFinished && listReady && !searching && otherSheets.length > 0 && (
                 <section aria-labelledby="all-sheets-heading">
                     <h2 id="all-sheets-heading" className="home-section-heading">
                         All sheets ({otherSheets.length})

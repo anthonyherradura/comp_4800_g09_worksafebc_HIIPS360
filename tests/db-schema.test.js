@@ -117,3 +117,18 @@ test("SCH-11 a job's sheets: at most LIMITS.sheetsPerJob, and a job saved with o
     assert.deepEqual(job({ sheetIds: ["cu-766011", "cu-732044"] }).toJSON().sheetIds, ["cu-766011", "cu-732044"]);
     assert.equal(job({ sheetId: "cu-732044" }).toJSON().sheetId, undefined);
 });
+
+test("SCH-12 finishedAt: null on a new job, a date once finished, optional in the validator for jobs saved before it", () => {
+    assert.equal(job().finishedAt, null);
+    assert.equal(job().toJSON().finishedAt, null);
+    const when = new Date("2026-10-14T20:00:00Z");
+    assert.equal(job({ finishedAt: when }).toJSON().finishedAt.getTime(), when.getTime());
+    assert.ok(errorsOf(job({ finishedAt: "not a date" })).includes("finishedAt"));
+
+    const rule = jobsValidator.$jsonSchema;
+    assert.deepEqual(rule.properties.finishedAt.bsonType, ["date", "null"]);
+    assert.ok(!rule.required.includes("finishedAt"), "strict validation would refuse every change to an older job");
+    // A job read back without the field (saved before FEAT-7) still reaches the app as open
+    const old = Job.hydrate({ _id: id(), userId: id(), label: "Old", lastOpenedAt: new Date() });
+    assert.equal(old.toJSON().finishedAt, null);
+});

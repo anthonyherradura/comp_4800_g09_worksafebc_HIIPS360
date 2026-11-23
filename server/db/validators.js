@@ -45,6 +45,9 @@ export const jobsValidator = {
             visitNotesUpdatedAt: { bsonType: ["date", "null"] },
             hazards: { bsonType: "array", maxItems: LIMITS.hazardsPerJob, items: hazard },
             lastOpenedAt: date,
+            // Not in `required`: jobs saved before FEAT-7 don't have it, and strict validation would refuse every
+            // later change to them
+            finishedAt: { bsonType: ["date", "null"] },
             rev: { bsonType: ["int", "long", "double"], minimum: 0 },
             createdAt: date,
             updatedAt: date,

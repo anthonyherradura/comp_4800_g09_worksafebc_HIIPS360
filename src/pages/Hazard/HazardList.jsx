@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { LockIcon } from "../../components/ReadOnlyBanner";
 import { useHazards } from "../../context/HazardContext";
+import { useJobs } from "../../context/JobContext";
 import { HAZARD_STATUS, STATUS_LABEL, groupByStatus, photoCount } from "../../data/hazardStatus";
+import { formatFullDayTime } from "../../data/recentSheets";
 import { getSheetHazard, sheetName } from "../../data/sheets";
+import FinishInspection from "./FinishInspection";
 import { formatFindings } from "./formatFindings";
 import "./Hazard.css";
 
@@ -28,18 +32,46 @@ const DownloadIcon = () => (
 
 // Page 1: the hazards for this job, sorted into Unaddressed / Reviewed / Not applicable tabs.
 // Shows what was recorded only. It never says whether the site is compliant.
+// Finish inspection (FEAT-7) is here too. A finished inspection is read-only: no Log hazard, no Not applicable
+// or Undo on the rows, and a note saying when it was finished. Its PDF can still be downloaded.
 export default function HazardList() {
     const { hazards, updateHazard } = useHazards();
+    const { currentJob, isFinished } = useJobs();
     const saved = useLocation().state?.saved; // set by Save hazard on the detail page
-    const [tab, setTab] = useState(HAZARD_STATUS.UNADDRESSED);
+    // A finished inspection has nothing Unaddressed, so it opens on what was recorded
+    const [tab, setTab] = useState(isFinished ? HAZARD_STATUS.REVIEWED : HAZARD_STATUS.UNADDRESSED);
     const [exportMessage, setExportMessage] = useState("");
     const [exporting, setExporting] = useState(false);
+    const finishedRef = useRef(null);
+    const focusFinished = useRef(false); // just finished: the note saying so gets focus once it shows
 
     useEffect(() => {
         if (!exportMessage) return;
         const timer = setTimeout(() => setExportMessage(""), 4000);
         return () => clearTimeout(timer);
     }, [exportMessage]);
+
+    // One frame after the render that shows the note, once the finish dialog has gone and the page can take focus
+    useEffect(() => {
+        if (!focusFinished.current) return;
+        const frame = requestAnimationFrame(() => {
+            if (!finishedRef.current) return;
+            focusFinished.current = false;
+            finishedRef.current.focus();
+        });
+        return () => cancelAnimationFrame(frame);
+    });
+
+    // From the review sheet, which has closed by now. The tab buttons are always there, even if this tab was open.
+    const showUnaddressed = () => {
+        setTab(HAZARD_STATUS.UNADDRESSED);
+        requestAnimationFrame(() => document.getElementById("hl-tab-todo")?.focus());
+    };
+
+    const handleFinished = () => {
+        setTab(HAZARD_STATUS.REVIEWED);
+        focusFinished.current = true;
+    };
 
     const groups = groupByStatus(hazards);
     // With more than one sheet on the job, each sheet hazard says which sheet it came from
@@ -74,8 +106,21 @@ export default function HazardList() {
 
     return (
         <div className="hl-page">
-            <h1 className="hl-title">Hazards</h1>
-            {saved && (
+            <div className="hl-head">
+                <h1 className="hl-title">Hazards</h1>
+                {isFinished && (
+                    <span className="hl-badge">
+                        <LockIcon />
+                        Completed · Read-only
+                    </span>
+                )}
+            </div>
+            {isFinished && (
+                <p className="hl-saved hl-finished" ref={finishedRef} tabIndex={-1}>
+                    Inspection finished {formatFullDayTime(currentJob.finishedAt)}. It's now read-only.
+                </p>
+            )}
+            {saved && !isFinished && (
                 <p className="hl-saved" role="status">
                     Saved “{saved}”.
                 </p>
@@ -83,8 +128,14 @@ export default function HazardList() {
 
             {hazards.length === 0 ? (
                 <p className="hl-empty">
-                    No hazards yet. Pick a protocol sheet on <Link to="/home">Home</Link> to load its hazards, or tap
-                    “Log hazard”.
+                    {isFinished ? (
+                        "No hazards were recorded on this inspection."
+                    ) : (
+                        <>
+                            No hazards yet. Pick a protocol sheet on <Link to="/home">Home</Link> to load its hazards,
+                            or tap “Log hazard”.
+                        </>
+                    )}
                 </p>
             ) : (
                 <div className="hl-tabs" role="tablist" aria-label="Hazard status">
@@ -108,12 +159,14 @@ export default function HazardList() {
                 </div>
             )}
 
-            <div className="hl-tools">
-                <Link to="/hazard/new" className="hl-tool hl-tool--primary">
-                    <PlusIcon />
-                    Log hazard
-                </Link>
-            </div>
+            {!isFinished && (
+                <div className="hl-tools">
+                    <Link to="/hazard/new" className="hl-tool hl-tool--primary">
+                        <PlusIcon />
+                        Log hazard
+                    </Link>
+                </div>
+            )}
 
             {hazards.length > 0 && (
                 <section role="tabpanel" id="hl-panel" aria-labelledby={`hl-tab-${current.key}`}>
@@ -147,7 +200,7 @@ export default function HazardList() {
                                         <span className="hl-arrow" aria-hidden="true" />
                                     </Link>
 
-                                    {tab === HAZARD_STATUS.UNADDRESSED && (
+                                    {!isFinished && tab === HAZARD_STATUS.UNADDRESSED && (
                                         <div className="hl-row-actions">
                                             <button
                                                 type="button"
@@ -159,7 +212,7 @@ export default function HazardList() {
                                             </button>
                                         </div>
                                     )}
-                                    {tab === HAZARD_STATUS.NOT_APPLICABLE && (
+                                    {!isFinished && tab === HAZARD_STATUS.NOT_APPLICABLE && (
                                         <div className="hl-row-actions">
                                             <button
                                                 type="button"
@@ -180,6 +233,7 @@ export default function HazardList() {
 
             {hazards.length > 0 && (
                 <div className="hl-footer">
+                    {!isFinished && <FinishInspection onShowUnaddressed={showUnaddressed} onFinished={handleFinished} />}
                     <button type="button" className="hl-copy" onClick={handleExport} disabled={exporting}>
                         <DownloadIcon />
                         {exporting ? "Creating PDF…" : "Download PDF"}

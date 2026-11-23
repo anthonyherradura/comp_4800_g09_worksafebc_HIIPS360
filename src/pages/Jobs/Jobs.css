@@ -289,3 +289,82 @@
     outline-offset: -3px;
     border-radius: 10px;
 }
+
+/* ---------- Finished inspections (FEAT-7) ---------- */
+
+/* In progress, then Finished, each a list of cards */
+.jobs-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.jobs-group + .jobs-group {
+    margin-top: 16px;
+}
+
+.jobs-group .jobs-subtitle {
+    margin: 4px 0 -6px 2px;
+}
+
+/* Lock before a finished site's name */
+.jobs-lock {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: -1px;
+}
+
+.jobs-lock svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* The finished site the officer is typing the name of (the current job keeps its orange outline) */
+.jobs-row.is-match {
+    border-color: var(--wsbc-bodycopy);
+}
+
+/* Typing a finished site's name: adding it starts a new, numbered visit */
+.jobs-note {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border-left: 4px solid var(--wsbc-orange);
+    border-radius: 8px;
+    background: var(--wsbc-pale-sunrise-yellow);
+}
+
+.jobs-note p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--wsbc-iron-grey);
+}
+
+.jobs-note strong {
+    color: var(--wsbc-black);
+}
+
+.jobs-note-btn {
+    align-self: flex-start;
+    min-height: 48px;
+    /* B-08: 48px glove target */
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--wsbc-black);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.jobs-note-btn:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+}

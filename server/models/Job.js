@@ -48,6 +48,10 @@ const jobSchema = new mongoose.Schema(
         visitNotesUpdatedAt: { type: Date, default: null },
         hazards: { type: [hazardSchema], default: [], validate: maxItems(LIMITS.hazardsPerJob, "hazards per job") },
         lastOpenedAt: { type: Date, required: true, default: Date.now },
+        // When the officer finished the inspection (FEAT-7), or null while it's open. A finished job is read-only:
+        // every change route in routes/jobs.js includes `finishedAt: null` in its filter. Jobs saved before this
+        // field existed don't have it, which reads the same as null.
+        finishedAt: { type: Date, default: null },
         // Goes up by one on every change, so a write based on an old copy can be refused (see routes/jobs.js)
         rev: { type: Number, default: 0 },
     },
@@ -69,10 +73,11 @@ jobSchema.pre(["updateOne", "findOneAndUpdate", "updateMany"], function bumpRev(
 // A job's sheets, for a job saved either way (see sheetIds above). Works on documents and lean objects.
 export const jobSheetIds = (job) => (job.sheetIds?.length ? [...job.sheetIds] : job.sheetId ? [job.sheetId] : []);
 
-// What the app receives: ids as strings under `id`, no userId, and always `sheetIds`
+// What the app receives: ids as strings under `id`, no userId, and always `sheetIds` and `finishedAt`
 const toClient = (doc, ret) => {
     ret.sheetIds = jobSheetIds(ret);
     delete ret.sheetId;
+    ret.finishedAt = ret.finishedAt ?? null;
     ret.id = String(ret._id);
     delete ret._id;
     delete ret.userId;
