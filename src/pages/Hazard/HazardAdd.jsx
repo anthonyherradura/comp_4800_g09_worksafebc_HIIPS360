@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useHazards } from "../../context/HazardContext";
+import { useJobs } from "../../context/JobContext";
 import { CameraPlusIcon, CloseIcon } from "./HazardIcons";
 import { suggestHazard } from "./suggestHazard";
 import "./Hazard.css";
@@ -41,6 +42,7 @@ const NO_HAZARD = "no hazard identified"; // the AI's answer when it finds nothi
 // The button and the suggestion box have three phases: waiting for input, getting a suggestion, suggestion ready.
 export default function HazardAdd() {
     const { hazards, addHazard, addPhotos, updateHazard } = useHazards();
+    const { isFinished } = useJobs();
     const navigate = useNavigate();
     const [prompt, setPrompt] = useState("");
     const [photoFile, setPhotoFile] = useState(null); // sent to the AI
@@ -142,6 +144,9 @@ export default function HazardAdd() {
         setSaving(false);
         if (id) navigate(`/hazard/${id}`); // if not, the save error shows and the form keeps its input
     };
+
+    // A finished inspection is read-only (FEAT-7): nothing can be logged, so back to its list
+    if (isFinished) return <Navigate to="/hazard" replace />;
 
     return (
         <form className="ha-page" onSubmit={handleAccept}>

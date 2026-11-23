@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import ReadOnlyBanner from "../../components/ReadOnlyBanner";
 import { useHazards } from "../../context/HazardContext";
+import { useJobs } from "../../context/JobContext";
 import { HAZARD_STATUS, STATUS_LABEL, getHazardStatus } from "../../data/hazardStatus";
 import { getSheetHazard, sheetName } from "../../data/sheets";
 import { BackIcon, CameraPlusIcon, CloseIcon } from "./HazardIcons";
@@ -105,10 +107,13 @@ function SheetGuidance({ guidance }) {
     );
 }
 
-// Page 3: hazard info, sheet guidance, comment, photo collection, not applicable, delete
+// Page 3: hazard info, sheet guidance, comment, photo collection, not applicable, delete.
+// On a finished inspection (FEAT-7) everything can be read and nothing changed: the comment is read-only (so it
+// can still be copied), Add photo and Not applicable are off, and there is no Save hazard, photo × or Delete.
 export default function HazardDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { currentJob, isFinished } = useJobs();
     const { hazards, updateHazard, addPhotos, deleteHazard, saveHazard } = useHazards();
     const hazard = hazards.find((h) => h.id === id);
     const guidance = hazard?.source === "sheet" ? getSheetHazard(hazard.sheetId, hazard.sheetKey) : null;
@@ -200,6 +205,8 @@ export default function HazardDetail() {
                 <BackIcon /> Hazards
             </Link>
 
+            {isFinished && <ReadOnlyBanner finishedAt={currentJob.finishedAt} />}
+
             <header className="hd-head">
                 {guidance && (
                     <p className="hd-kicker">{[sheetName(hazard.sheetId), guidance.stage].filter(Boolean).join(" · ")}</p>
@@ -272,9 +279,10 @@ export default function HazardDetail() {
                 <div role="tabpanel" id="hd-panel-comment" aria-labelledby="hd-tab-comment" className="hd-body">
                     <textarea
                         className="hd-textarea"
-                        placeholder="Add a comment"
+                        placeholder={isFinished ? "No comment" : "Add a comment"}
                         aria-label="Comment"
                         value={hazard.comment}
+                        readOnly={isFinished}
                         onChange={(e) => updateHazard(id, { comment: e.target.value })}
                     />
                 </div>
@@ -287,14 +295,16 @@ export default function HazardDetail() {
                             {hazard.photos.map((url, i) => (
                                 <div key={url} className="hd-photo">
                                     <img src={url} alt={`Hazard photo ${i + 1}`} />
-                                    <button
-                                        type="button"
-                                        className="hd-photo-remove"
-                                        aria-label={`Remove photo ${i + 1}`}
-                                        onClick={() => handleRemovePhoto(url)}
-                                    >
-                                        <CloseIcon />
-                                    </button>
+                                    {!isFinished && (
+                                        <button
+                                            type="button"
+                                            className="hd-photo-remove"
+                                            aria-label={`Remove photo ${i + 1}`}
+                                            onClick={() => handleRemovePhoto(url)}
+                                        >
+                                            <CloseIcon />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -305,7 +315,7 @@ export default function HazardDetail() {
             <div className="hd-actions">
                 <div className="hd-actions-row">
                     {/* Photos are added from here on every tab */}
-                    <label className="btn hd-add">
+                    <label className={`btn hd-add${isFinished ? " is-disabled" : ""}`}>
                         <CameraPlusIcon />
                         Add photo
                         <input
@@ -314,6 +324,7 @@ export default function HazardDetail() {
                             accept="image/*"
                             multiple
                             aria-label="Add photos"
+                            disabled={isFinished}
                             onChange={handleAddPhotos}
                         />
                     </label>
@@ -321,12 +332,18 @@ export default function HazardDetail() {
                         type="button"
                         className="btn hd-na"
                         aria-pressed={Boolean(hazard.notApplicable)}
+                        disabled={isFinished}
                         onClick={toggleNotApplicable}
                     >
                         {hazard.notApplicable ? "Mark as applicable" : "Not applicable"}
                     </button>
                 </div>
-                {reapplied && !hazard.notApplicable && (
+                {isFinished && (
+                    <p className="hd-locked-note">
+                        Photos can't be added or removed, and there's no Save hazard on a finished inspection.
+                    </p>
+                )}
+                {!isFinished && reapplied && !hazard.notApplicable && (
                     <div className="hd-reapplied" role="status">
                         <p>Marked applicable again because you added a photo.</p>
                         <button type="button" className="hd-undo" onClick={undoReapply}>
@@ -339,18 +356,20 @@ export default function HazardDetail() {
                         Not saved yet. Your changes are kept here and will be tried again when you have a connection.
                     </p>
                 )}
-                <button
-                    type="button"
-                    className="btn btn-orange hd-save"
-                    onClick={handleSave}
-                    disabled={saving || uploading > 0}
-                >
-                    {uploading > 0 ? "Uploading photo…" : saving ? "Saving…" : "Save hazard"}
-                </button>
+                {!isFinished && (
+                    <button
+                        type="button"
+                        className="btn btn-orange hd-save"
+                        onClick={handleSave}
+                        disabled={saving || uploading > 0}
+                    >
+                        {uploading > 0 ? "Uploading photo…" : saving ? "Saving…" : "Save hazard"}
+                    </button>
+                )}
             </div>
 
             {/* Only hazards the officer logged can be deleted. Sheet hazards are marked Not applicable instead. */}
-            {hazard.source === "officer" && (
+            {!isFinished && hazard.source === "officer" && (
                 <button type="button" className="hd-delete" onClick={handleDelete}>
                     Delete hazard
                 </button>

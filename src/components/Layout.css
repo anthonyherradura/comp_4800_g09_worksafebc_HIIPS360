@@ -273,6 +273,30 @@
     cursor: pointer;
 }
 
+/* A finished inspection's pages say they are read-only (ReadOnlyBanner.jsx, FEAT-7).
+   White on iron grey is well over 4.5:1. */
+.readonly-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--wsbc-iron-grey);
+    color: var(--wsbc-white);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.readonly-banner svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+}
+
+.readonly-banner p {
+    margin: 0;
+}
+
 /* Shown by JobProvider while the job sites load, or when they couldn't */
 .load-state {
     display: flex;

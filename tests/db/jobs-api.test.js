@@ -4,6 +4,7 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
+import { getJobChecklist } from "../../server/services/sheetCatalog.js";
 
 const BASE_URI = process.env.MONGODB_TEST_URI;
 const skip = BASE_URI ? false : "set MONGODB_TEST_URI to run (see .env.example)";
@@ -90,6 +91,7 @@ test("DB-01 a new job has every field the app reads, and no userId leaves the AP
     assert.match(job.id, /^[0-9a-f]{24}$/);
     assert.equal(job.userId, undefined);
     assert.equal(job._id, undefined);
+    assert.equal(job.finishedAt, null, "a new inspection is open");
 });
 
 test("DB-02 the same label in another case reopens the job instead of making a second one", { skip }, async () => {
@@ -154,14 +156,14 @@ test("DB-07 another officer gets 404 for every route on my job, hazard and photo
         ["GET", j], ["POST", `${j}/open`], ["PUT", `${j}/sheets`, { sheetIds: [LOG] }],
         ["PUT", `${j}/visit-notes`, { visitNotes: "x" }], ["POST", `${j}/hazards`, { name: "Sneaky" }],
         ["PATCH", h, { comment: "x" }], ["POST", `${h}/photos`, photoForm(1)], ["DELETE", `${h}/photos/${photoId}`],
-        ["DELETE", h], ["GET", `/photos/${photoId}`], ["DELETE", j],
+        ["DELETE", h], ["GET", `/photos/${photoId}`], ["POST", `${j}/finish`], ["DELETE", j],
     ];
     for (const [method, path, body] of attempts) {
         const res = await other(method, path, body);
         assert.equal(res.status, 404, `${method} ${path} gave ${res.status}`);
     }
     const after = (await me("GET", j)).data.job;
-    assert.deepEqual(after, { ...after, label: "Mine", sheetIds: [], visitNotes: "" });
+    assert.deepEqual(after, { ...after, label: "Mine", sheetIds: [], visitNotes: "", finishedAt: null });
     assert.equal(after.hazards.length, 1);
     assert.equal(after.hazards[0].comment, "");
     assert.equal((await me("GET", `/photos/${photoId}`)).status, 200);
@@ -534,6 +536,9 @@ test("DB-25 MongoDB's validator refuses bad documents even when the app's checks
     };
     const jobs = Job.collection;
     await jobs.insertOne({ ...good });
+    // finishedAt is optional (jobs saved before FEAT-7 don't have it), and a date or null when it's there
+    await jobs.insertOne({ ...good, label: "Finished", finishedAt: new Date() });
+    await jobs.insertOne({ ...good, label: "Open", finishedAt: null });
     const hazard = { _id: new mongoose.Types.ObjectId(), source: "officer", name: "x", comment: "", notApplicable: false, photoIds: [], createdAt: new Date() };
     const bad = [
         { ...good, label: "" },
@@ -543,6 +548,7 @@ test("DB-25 MongoDB's validator refuses bad documents even when the app's checks
         { ...good, label: "E", hazards: [{ ...hazard, sheetId: LOG, sheetKey: "k" }] },
         { ...good, label: "F", hazards: [{ ...hazard, photoIds: Array.from({ length: LIMITS.photosPerHazard + 1 }, () => new mongoose.Types.ObjectId()) }] },
         { ...good, label: "G", visitNotes: "x".repeat(LIMITS.visitNotesChars + 1) },
+        { ...good, label: "H", finishedAt: "yes" },
     ];
     for (const doc of bad) await assert.rejects(jobs.insertOne(doc), { code: 121 }, JSON.stringify(doc).slice(0, 80));
     await assert.rejects(jobs.insertOne({ ...good }), { code: 11000 }, "same label for the same officer");
@@ -560,6 +566,7 @@ test("DB-26 every route's query uses an index (IXSCAN), none scans the collectio
     const jobId = new mongoose.Types.ObjectId();
     const plans = {
         "list jobs": Job.find({ userId }).sort({ lastOpenedAt: -1 }),
+        "my labels (new job, numbered visits)": Job.find({ userId }).select("label finishedAt lastOpenedAt"),
         "label lookup": Job.findOne({ userId, label: "x" }).collation({ locale: "en", strength: 2 }),
         "one job": Job.findOne({ _id: jobId, userId }),
         "one hazard": Job.findOne({ _id: jobId, userId, "hazards._id": jobId }),
@@ -584,4 +591,169 @@ test("DB-27 a worst-case job (every limit full) stays far under MongoDB's 16 MB 
     await Job.updateOne({ _id: job.id }, { $set: { hazards, visitNotes: "v".repeat(LIMITS.visitNotesChars) } });
     const [{ bytes }] = await Job.aggregate([{ $match: { _id: new mongoose.Types.ObjectId(job.id) } }, { $project: { bytes: { $bsonSize: "$$ROOT" } } }]);
     assert.ok(bytes < 2 * 1024 * 1024, `${bytes} bytes`);
+});
+
+// ---------- finishing an inspection (FEAT-7) ----------
+
+const finish = (call, job) => call("POST", `/jobs/${job.id}/finish`);
+
+test("DB-28 finishing is refused while a hazard is Unaddressed or a checklist item is To review", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    const j = `/jobs/${job.id}`;
+    const { hazards } = (await call("PUT", `${j}/sheets`, { sheetIds: [LOG] })).data.job;
+    const checklist = getJobChecklist([LOG]);
+
+    let res = await finish(call, job);
+    assert.equal(res.status, 409);
+    assert.equal(res.data.error, "This inspection can't be finished yet: 40 hazards are still Unaddressed and 13 checklist items are still To review.");
+
+    // A photo on the first hazard, not applicable on all but the last, every checklist item but one answered
+    await call("POST", `${j}/hazards/${hazards[0].id}/photos`, photoForm(1));
+    for (const h of hazards.slice(1, -1)) await call("PATCH", `${j}/hazards/${h.id}`, { notApplicable: true });
+    for (const item of checklist.slice(0, -1)) await call("PUT", `${j}/checklist/${item.id}`, { status: "ready" });
+    res = await finish(call, job);
+    assert.equal(res.data.error, "This inspection can't be finished yet: 1 hazard is still Unaddressed and 1 checklist item is still To review.");
+
+    await call("PATCH", `${j}/hazards/${hazards.at(-1).id}`, { notApplicable: true });
+    res = await finish(call, job);
+    assert.equal(res.status, 409);
+    assert.equal(res.data.error, "This inspection can't be finished yet: 1 checklist item is still To review.");
+    assert.equal((await call("GET", j)).data.job.finishedAt, null, "nothing was finished");
+
+    await call("PUT", `${j}/checklist/${checklist.at(-1).id}`, { status: "not-applicable" });
+    assert.equal((await finish(call, job)).status, 200, "visit notes are optional");
+});
+
+test("DB-29 finishing saves the time once: the list shows it, finishing again changes nothing, opening still works", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    const j = `/jobs/${job.id}`;
+    const id = (await call("POST", `${j}/hazards`, { name: "Ladder", comment: "Footing loose" })).data.hazardId;
+    await call("POST", `${j}/hazards/${id}/photos`, photoForm(1));
+
+    const done = await finish(call, job);
+    assert.equal(done.status, 200);
+    const { finishedAt } = done.data.job;
+    assert.ok(!Number.isNaN(Date.parse(finishedAt)), finishedAt);
+    assert.equal(done.data.job.hazards[0].comment, "Footing loose", "the whole job comes back");
+
+    const again = await finish(call, job);
+    assert.equal(again.status, 200, "a retry after a lost answer does no harm");
+    assert.deepEqual(again.data.job, done.data.job);
+
+    const listed = (await call("GET", "/jobs")).data.jobs.find((x) => x.id === job.id);
+    assert.equal(listed.finishedAt, finishedAt);
+    assert.equal((await call("POST", `${j}/open`)).status, 200);
+    assert.equal((await call("GET", j)).data.job.finishedAt, finishedAt);
+});
+
+test("DB-30 a finished inspection is read-only: every change answers 423 and changes nothing", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call, "Locked yard");
+    const j = `/jobs/${job.id}`;
+    const id = (await call("POST", `${j}/hazards`, { name: "Ladder" })).data.hazardId;
+    const h = `${j}/hazards/${id}`;
+    const photoId = (await call("POST", `${h}/photos`, photoForm(1))).data.job.hazards[0].photoIds[0];
+    await call("PUT", `${j}/visit-notes`, { visitNotes: "Before" });
+    const finished = (await finish(call, job)).data.job;
+
+    const attempts = [
+        ["PUT", `${j}/sheets`, { sheetIds: [LOG] }], ["PUT", `${j}/sheets`, { sheetIds: [] }],
+        ["PUT", `${j}/checklist/any-item`, { status: "ready" }], ["PUT", `${j}/visit-notes`, { visitNotes: "After" }],
+        ["POST", `${j}/hazards`, { name: "Late" }], ["PATCH", h, { comment: "Changed", notApplicable: true }],
+        ["POST", `${h}/photos`, photoForm(1)], ["DELETE", `${h}/photos/${photoId}`], ["DELETE", h], ["DELETE", j],
+    ];
+    for (const [method, path, body] of attempts) {
+        const res = await call(method, path, body);
+        assert.equal(res.status, 423, `${method} ${path} gave ${res.status}`);
+        assert.match(res.data.error, /finished/);
+    }
+    assert.deepEqual((await call("GET", j)).data.job, finished, "not even rev or updatedAt moved");
+    assert.equal(await Photo.countDocuments({ jobId: job.id }), 1, "no photo was saved or deleted");
+
+    // Reading still works: the job, its photo, the list, and opening it
+    assert.equal((await call("GET", `/photos/${photoId}`)).status, 200);
+    assert.ok((await call("GET", "/jobs")).data.jobs.some((x) => x.id === job.id));
+    assert.equal((await call("POST", `${j}/open`)).status, 200);
+});
+
+test("DB-31 another officer still gets 404, not 423, on my finished inspection", { skip }, async () => {
+    const me = await officer("Me");
+    const other = await officer("Other");
+    const job = await newJob(me);
+    const j = `/jobs/${job.id}`;
+    const id = (await me("POST", `${j}/hazards`, { name: "Ladder" })).data.hazardId;
+    const h = `${j}/hazards/${id}`;
+    const photoId = (await me("POST", `${h}/photos`, photoForm(1))).data.job.hazards[0].photoIds[0];
+    await finish(me, job);
+
+    const attempts = [
+        ["GET", j], ["POST", `${j}/finish`], ["PUT", `${j}/sheets`, { sheetIds: [] }],
+        ["PUT", `${j}/checklist/any-item`, { status: "ready" }], ["PUT", `${j}/visit-notes`, { visitNotes: "x" }],
+        ["POST", `${j}/hazards`, { name: "x" }], ["PATCH", h, { comment: "x" }], ["POST", `${h}/photos`, photoForm(1)],
+        ["DELETE", `${h}/photos/${photoId}`], ["DELETE", h], ["DELETE", j],
+    ];
+    for (const [method, path, body] of attempts) {
+        const res = await other(method, path, body);
+        assert.equal(res.status, 404, `${method} ${path} gave ${res.status}: a 423 would say the job exists`);
+    }
+});
+
+test("DB-32 a finished site's name starts a numbered visit, and a visit in progress reopens", { skip }, async () => {
+    const call = await officer();
+    const first = await newJob(call, "Oak St yard");
+    await finish(call, first);
+
+    const second = await call("POST", "/jobs", { label: "oak st YARD" });
+    assert.equal(second.status, 201);
+    assert.equal(second.data.job.label, "Oak St yard (2)", "numbered, with the first visit's capitals");
+    assert.equal(second.data.job.finishedAt, null);
+
+    // While visit 2 is open, either name reopens it
+    for (const label of ["Oak St yard", "OAK ST YARD (2)"]) {
+        const again = await call("POST", "/jobs", { label });
+        assert.equal(again.status, 200, label);
+        assert.equal(again.data.job.id, second.data.job.id, label);
+    }
+
+    await finish(call, second.data.job);
+    const third = await call("POST", "/jobs", { label: "Oak St yard" });
+    assert.equal(third.status, 201);
+    assert.equal(third.data.job.label, "Oak St yard (3)");
+
+    // A site that only starts the same way is its own site
+    assert.equal((await call("POST", "/jobs", { label: "Oak St yard north" })).data.job.label, "Oak St yard north");
+
+    const labels = (await call("GET", "/jobs")).data.jobs.map((x) => x.label).sort();
+    assert.deepEqual(labels, ["Oak St yard", "Oak St yard (2)", "Oak St yard (3)", "Oak St yard north"]);
+    // Another officer's site of the same name starts at visit 1
+    assert.equal((await newJob(await officer("Other"), "Oak St yard")).label, "Oak St yard");
+});
+
+test("DB-33 adding a finished site's name from several requests at once starts one new visit", { skip }, async () => {
+    const call = await officer();
+    const first = await newJob(call, "Dock 4");
+    await finish(call, first);
+    const results = await Promise.all(Array.from({ length: 5 }, () => call("POST", "/jobs", { label: "dock 4" })));
+    assert.ok(results.every((r) => r.status === 200 || r.status === 201), results.map((r) => r.status).join());
+    assert.equal(new Set(results.map((r) => r.data.job.id)).size, 1);
+    assert.equal(results[0].data.job.label, "Dock 4 (2)");
+    assert.equal((await call("GET", "/jobs")).data.jobs.length, 2);
+});
+
+test("DB-34 a job saved before finishing existed reads as open, takes changes, and can be finished", { skip }, async () => {
+    const call = await officer();
+    const job = await newJob(call);
+    // Bypasses Mongoose, so the document looks like one saved before FEAT-7: no finishedAt at all
+    await Job.collection.updateOne({ _id: new mongoose.Types.ObjectId(job.id) }, { $unset: { finishedAt: "" } });
+    assert.equal((await Job.collection.findOne({ _id: new mongoose.Types.ObjectId(job.id) })).finishedAt, undefined);
+
+    const j = `/jobs/${job.id}`;
+    assert.equal((await call("GET", j)).data.job.finishedAt, null);
+    assert.equal((await call("GET", "/jobs")).data.jobs[0].finishedAt, null);
+    assert.equal((await call("PUT", `${j}/visit-notes`, { visitNotes: "Still open" })).status, 200, "the validator doesn't require it");
+    const done = await finish(call, job);
+    assert.equal(done.status, 200);
+    assert.ok(done.data.job.finishedAt);
 });

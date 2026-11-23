@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import ReadOnlyBanner from "../../components/ReadOnlyBanner";
 import { useJobs } from "../../context/JobContext";
 import { getJobChecklist, sheetName } from "../../data/sheets";
 import "./Planning.css";
@@ -24,21 +25,28 @@ const ChevronIcon = () => (
 );
 
 // Three buttons in a row; the chosen one is highlighted. Arrow keys move between them.
-function StatusSegments({ item, value, onSelect }) {
+// readOnly (a finished inspection): the status can still be read and reached, but not changed.
+function StatusSegments({ item, value, onSelect, readOnly = false }) {
+    const choose = (next) => !readOnly && onSelect(next);
     const handleKeyDown = (e) => {
-        const index = STATUSES.findIndex((s) => s.value === value);
+        const buttons = [...e.currentTarget.parentElement.querySelectorAll('[role="radio"]')];
+        const index = buttons.indexOf(e.currentTarget);
         let next = null;
         if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (index + 1) % STATUSES.length;
         if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (index - 1 + STATUSES.length) % STATUSES.length;
         if (next === null) return;
         e.preventDefault();
-        const buttons = e.currentTarget.parentElement.querySelectorAll('[role="radio"]');
-        onSelect(STATUSES[next].value);
+        choose(STATUSES[next].value);
         buttons[next].focus();
     };
 
     return (
-        <div className="planning-segments" role="radiogroup" aria-label={`${item.label}: status`}>
+        <div
+            className={`planning-segments${readOnly ? " is-readonly" : ""}`}
+            role="radiogroup"
+            aria-label={`${item.label}: status`}
+            aria-readonly={readOnly || undefined}
+        >
             {STATUSES.map((option) => {
                 const selected = option.value === value;
                 return (
@@ -49,7 +57,7 @@ function StatusSegments({ item, value, onSelect }) {
                         aria-checked={selected}
                         tabIndex={selected ? 0 : -1}
                         className={`planning-segment planning-segment--${option.value}${selected ? " is-selected" : ""}`}
-                        onClick={() => onSelect(option.value)}
+                        onClick={() => choose(option.value)}
                         onKeyDown={handleKeyDown}
                     >
                         {selected && option.value === "ready" && (
@@ -66,7 +74,7 @@ function StatusSegments({ item, value, onSelect }) {
 }
 
 export default function PlanningPage() {
-    const { currentJob, setChecklistStatus, saveVisitNotes } = useJobs();
+    const { currentJob, isFinished, setChecklistStatus, saveVisitNotes } = useJobs();
     // Shown from the job, with anything still being saved on top, so it survives leaving this page
     const notes = currentJob?.visitNotes ?? "";
 
@@ -90,6 +98,9 @@ export default function PlanningPage() {
     return (
         <div className="planning-page">
             <h1 className="planning-title">Planning</h1>
+            {isFinished && (
+                <ReadOnlyBanner finishedAt={currentJob.finishedAt}>Its checklist and visit notes can't be changed.</ReadOnlyBanner>
+            )}
 
             {items.length === 0 ? (
                 <p className="planning-card planning-empty">
@@ -154,6 +165,7 @@ export default function PlanningPage() {
                                                     item={item}
                                                     value={statusOf(item)}
                                                     onSelect={(value) => setChecklistStatus(currentJob.id, item.id, value)}
+                                                    readOnly={isFinished}
                                                 />
                                             </li>
                                         ))}
@@ -176,11 +188,16 @@ export default function PlanningPage() {
                     onChange={handleNotes}
                     maxLength={5000}
                     disabled={!currentJob}
-                    placeholder="Add visit notes…"
+                    readOnly={isFinished}
+                    placeholder={isFinished ? "No visit notes" : "Add visit notes…"}
                     aria-describedby="planning-demo"
                 />
                 <p id="planning-demo" className="planning-demo">
-                    {currentJob ? "Saved to this job as you type." : "Pick a job site to add visit notes."}
+                    {!currentJob
+                        ? "Pick a job site to add visit notes."
+                        : isFinished
+                          ? "The inspection is finished, so its visit notes are kept as they are."
+                          : "Saved to this job as you type."}
                 </p>
             </div>
         </div>

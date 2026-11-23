@@ -127,10 +127,11 @@ The prototype covers the whole MVP flow, from picking a job site to a findings P
 | Area | What exists |
 |---|---|
 | Landing, sign-in, register (`/`, `/login`, `/register`) | Says plainly that this is a prototype and offers to install the app. Accounts are stored in MongoDB; sessions are an httpOnly cookie. |
-| Job sites (`/jobs`) | Each officer has their own list of job sites. Opening one makes it the current job, shown in the header. |
+| Job sites (`/jobs`) | Each officer has their own list of job sites, in progress and finished, with when each was started and last opened or finished. Opening one makes it the current job, shown in the header. Adding a finished site's name again starts a new, numbered visit ("Oak St yard (2)"). |
 | Pick the protocol sheet (Home, `/home`) | Browse or search the sheets by name, or describe the work (or take a site photo) and ask Gemini to suggest up to three. A job can have up to 5 sheets. Every suggestion can be accepted, changed or ignored. |
 | Planning (`/planning`) | The chosen sheets' checklist for before and during the visit (Before you go, On arrival, Walking the site), each item marked ready or not applicable, plus visit notes. |
 | Hazards (`/hazard`) | The job's hazards from its sheets, in Unaddressed / Reviewed / Not applicable tabs. This page is also the summary, and **Download PDF** exports the findings (hazards, comments, photos). It records findings only and never says whether a site complies. |
+| Finish inspection (on Hazards) | A review of the inspection, then a last check, then it is finished for good. It can be finished once no hazard is Unaddressed and no checklist item is To review (visit notes are optional). A finished inspection is read-only on every page and on the server; it can still be opened and its PDF downloaded, but not changed or deleted. |
 | Hazard detail (`/hazard/:id`) | The sheet's guidance for that hazard (stage, controls, legislation), a comment, photos, and Not applicable. |
 | Log hazard (`/hazard/new`) | Add a hazard the sheet doesn't list: a photo and/or description, a Gemini suggestion for its name that the officer edits, and a check for a similar hazard already on the job. |
 | Sheet PDFs (`/pdfs`) | The original HIIPS PDFs. |
@@ -179,7 +180,7 @@ Known bugs and test results are in the team's Testing Log (Google Sheet, IDs `TC
 |---|---|
 | Accounts | MongoDB `users` (bcrypt password hash), plus the 3 most recently viewed sheets |
 | Sessions | MongoDB `sessions`, cookie `hiips360.sid` (httpOnly, `SameSite=Lax`, `Secure` in production, 30 days) |
-| Job sites, with their sheets, checklist, visit notes and **hazards** | MongoDB `jobs`, one document per job site per officer; hazards are embedded in it |
+| Job sites, with their sheets, checklist, visit notes, **hazards** and when the inspection was finished | MongoDB `jobs`, one document per job site per officer; hazards are embedded in it |
 | Photos | MongoDB `photos`, one document per photo; the hazard keeps their ids |
 | Protocol sheets | `src/data/sheets/*.json` in the app |
 | On the device | The last signed-in officer (so a reload with no signal stays signed in) and the app shell |
@@ -206,6 +207,8 @@ src/
   data/api.js           The only file that calls /api/jobs, /api/photos and /api/me
   data/sheets/          The sheet JSON, the catalogue, and sheetContent.js (hazards and checklist from a sheet)
   data/syncSheetHazards.js  What happens to a job's hazards when its sheets change (runs on the server)
+  data/finishCheck.js   What has to be done before an inspection can be finished (shared with the server)
+  data/jobVisits.js     Numbered visits to a finished site, "Oak St yard (2)" (shared with the server)
   auth/                 authService.js (the only file that calls /api/auth), validation.js (shared with the server)
   pages/<Name>/         <Name>.jsx + <Name>.css, one folder per page
   styles/tokens.css     WorkSafeBC design tokens (--wsbc-*, --font-*, --fs-*)
@@ -220,7 +223,7 @@ Every route except sign-in needs a signed-in officer, and every query is limited
 | Area | Routes |
 |---|---|
 | Auth (`server/routes/auth.js`) | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
-| Jobs (`server/routes/jobs.js`) | List, create, open and delete job sites; set their sheets, checklist and visit notes; add, change and delete hazards and their photos. Changes answer with the whole updated job. |
+| Jobs (`server/routes/jobs.js`) | List, create, open and delete job sites; set their sheets, checklist and visit notes; add, change and delete hazards and their photos; finish an inspection (`POST /api/jobs/:jobId/finish`). Changes answer with the whole updated job. A finished inspection is read-only: every change to it answers 423. |
 | Photos (`server/routes/photos.js`) | `GET /api/photos/:photoId` |
 | Me (`server/routes/me.js`) | `GET` and `POST /api/me/recent-sheets` |
 | AI (`server/routes/ai.js`) | `POST /api/ai/suggest-hazard`, `POST /api/ai/match-sheet` |

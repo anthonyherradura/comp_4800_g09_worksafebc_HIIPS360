@@ -1340,3 +1340,336 @@
     outline: 3px solid var(--wsbc-black);
     outline-offset: 2px;
 }
+
+/* ==========================================================
+   Finishing an inspection (FEAT-7): the Finish inspection button, the review sheet, the
+   "Finish this inspection?" dialog, and how the list looks once it is finished
+   ========================================================== */
+
+.hl-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* White on iron grey is well over 4.5:1 */
+.hl-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--wsbc-iron-grey);
+    color: var(--wsbc-white);
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.hl-badge svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Gets focus once the inspection is finished, so a screen reader reads it; it isn't a control */
+.hl-finished:focus {
+    outline: none;
+}
+
+/* Outline, like the other secondary buttons: Log hazard is the page's one primary */
+.hl-finish {
+    flex: none;
+    font-family: var(--font-body);
+}
+
+/* Both are native <dialog>s opened with showModal(): the page behind is inert, focus stays inside, and
+   Escape closes them (MobileSafe half and full modals). */
+.fi-dialog {
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: none;
+    background: var(--wsbc-white);
+    color: var(--wsbc-bodycopy);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+}
+
+/* Older browsers don't pass the tokens to ::backdrop, hence the fallback */
+.fi-dialog::backdrop {
+    background: var(--wsbc-black, black);
+    opacity: 0.55;
+}
+
+.fi-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* tokens.css makes every h2 orange in the heading font, and orange text on white fails contrast */
+.fi-dialog h2 {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1.375rem;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: var(--wsbc-bodycopy);
+}
+
+/* The review's title gets focus when it opens, so it's read first; it isn't a control */
+.fi-dialog h2:focus {
+    outline: none;
+}
+
+.fi-dialog p {
+    margin: 0;
+}
+
+/* Review: a half modal pinned to the bottom edge, clear of the home indicator */
+.fi-sheet {
+    width: min(100%, 600px);
+    max-height: 92dvh;
+    margin: auto auto 0;
+    border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.fi-sheet .fi-body {
+    padding: 12px 22px calc(24px + var(--safe-bottom));
+}
+
+.fi-handle {
+    align-self: center;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--wsbc-steel-grey);
+}
+
+/* Sits closer to the title it explains (beats .fi-dialog p) */
+.fi-dialog .fi-lead {
+    margin-top: -8px;
+}
+
+/* What is left to do: pale yellow with an orange edge */
+.fi-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-left: 4px solid var(--wsbc-orange);
+    border-radius: 8px;
+    background: var(--wsbc-pale-sunrise-yellow);
+}
+
+.fi-left-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--wsbc-black);
+    font-weight: 700;
+}
+
+.fi-left-title::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wsbc-orange);
+}
+
+.fi-left-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.fi-left-item p {
+    font-size: 0.875rem;
+    color: var(--wsbc-iron-grey);
+}
+
+.fi-link {
+    align-self: flex-start;
+    min-height: 48px;
+    /* B-08: 48px glove target */
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--wsbc-black);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Label on the left, value on the right, a line between rows */
+.fi-rows {
+    margin: 0;
+    border-top: 1px solid var(--wsbc-silver-grey);
+}
+
+.fi-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    border-bottom: 1px solid var(--wsbc-silver-grey);
+}
+
+.fi-row:last-child {
+    border-bottom: none;
+}
+
+.fi-row dt {
+    flex: none;
+    color: var(--wsbc-warm-grey);
+}
+
+.fi-row dd {
+    min-width: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-wrap: anywhere;
+    font-weight: 700;
+    text-align: right;
+}
+
+.fi-row svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
+/* Icons only (3:1 is enough for graphics): moss green for done, sunset orange for still to do */
+.fi-ok {
+    color: var(--wsbc-moss-green);
+}
+
+.fi-warn {
+    color: var(--wsbc-sunset-orange);
+}
+
+.fi-error {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* One primary per dialog. Black on orange: white on orange is only 2.4:1. */
+.fi-primary,
+.fi-secondary {
+    box-sizing: border-box;
+    min-height: 48px;
+    /* B-08: 48px glove target */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.fi-primary {
+    border: 2px solid var(--wsbc-orange);
+    background: var(--wsbc-orange);
+    color: var(--wsbc-black);
+}
+
+.fi-secondary {
+    border: 2px solid var(--wsbc-steel-grey);
+    background: var(--wsbc-white);
+    color: var(--wsbc-bodycopy);
+}
+
+.fi-primary:disabled,
+.fi-primary[aria-disabled="true"],
+.fi-secondary[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fi-primary:not(:disabled):not([aria-disabled="true"]):hover {
+    filter: brightness(0.92);
+}
+
+.fi-secondary:not([aria-disabled="true"]):hover {
+    background: var(--wsbc-ash-grey);
+}
+
+.fi-dialog .fi-helper {
+    margin-top: -6px;
+    font-size: 0.8125rem;
+    color: var(--wsbc-iron-grey);
+    text-align: center;
+}
+
+/* Confirm: a small dialog in the middle of the screen */
+.fi-confirm {
+    width: min(100% - 44px, 380px);
+    border-radius: 16px;
+}
+
+.fi-confirm .fi-body {
+    padding: 24px 20px 20px;
+}
+
+.fi-lock {
+    width: 32px;
+    height: 32px;
+    color: var(--wsbc-iron-grey);
+}
+
+.fi-lock svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.fi-about {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fi-strong {
+    font-weight: 700;
+}
+
+.fi-link:focus-visible,
+.fi-primary:focus-visible,
+.fi-secondary:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+}
+
+/* Hazard detail on a finished inspection: the comment stays readable and copyable, the buttons are off */
+.hd-textarea[readonly] {
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-iron-grey);
+    resize: none;
+}
+
+.hd-add.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: none;
+}
+
+.hd-locked-note {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--wsbc-iron-grey);
+}

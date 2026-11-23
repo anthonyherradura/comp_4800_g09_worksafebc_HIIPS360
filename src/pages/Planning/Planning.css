@@ -278,3 +278,19 @@
         transition: none;
     }
 }
+
+/* ---------- A finished inspection (FEAT-7): the checklist and notes can be read, not changed ---------- */
+/* The text keeps its colour: warm grey would fail contrast on the ash-grey track (B-07) */
+.planning-segments.is-readonly .planning-segment {
+    cursor: default;
+}
+
+.planning-segments.is-readonly .planning-segment:not(.is-selected):hover {
+    background: none;
+}
+
+.planning-textarea[readonly] {
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-iron-grey);
+    resize: none;
+}
