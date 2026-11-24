@@ -4,6 +4,7 @@ import config from "./config.js";
 import { createApp } from "./app.js";
 import { applySchema } from "./db/setup.js";
 import { hidePassword } from "./db/uri.js";
+import { captchaStartupWarning } from "./services/captcha.js";
 
 try {
     await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 5000 });
@@ -24,6 +25,9 @@ try {
     console.warn(`Couldn't update MongoDB's validators, so the existing ones stay: ${err.message}`);
     await mongoose.syncIndexes();
 }
+
+const captchaWarning = captchaStartupWarning({ isProduction: config.isProduction });
+if (captchaWarning) console.warn(captchaWarning);
 
 createApp().listen(config.port, () => {
     console.log(`HIIPS360 API on http://localhost:${config.port} (MongoDB connected)`);

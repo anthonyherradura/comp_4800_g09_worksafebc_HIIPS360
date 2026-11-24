@@ -24,6 +24,9 @@ before(async () => {
     if (skip) return;
     process.env.MONGODB_URI = testUri();
     process.env.SESSION_SECRET ||= "test-secret";
+    // These tests register officers directly; the bot check has its own tests (tests/captcha.test.js)
+    delete process.env.TURNSTILE_SITE_KEY;
+    delete process.env.TURNSTILE_SECRET_KEY;
     mongoose = (await import("mongoose")).default;
     await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
     const { applySchema } = await import("../../server/db/setup.js");

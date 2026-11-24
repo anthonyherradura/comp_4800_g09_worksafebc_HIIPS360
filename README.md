@@ -222,7 +222,7 @@ Every route except sign-in needs a signed-in officer, and every query is limited
 
 | Area | Routes |
 |---|---|
-| Auth (`server/routes/auth.js`) | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
+| Auth (`server/routes/auth.js`) | `POST /api/auth/register`, `POST /api/auth/login` (both need a Turnstile token when the keys are set), `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/captcha` (the site key, or `null`) |
 | Jobs (`server/routes/jobs.js`) | List, create, open and delete job sites; set their sheets, checklist and visit notes; add, change and delete hazards and their photos; finish an inspection (`POST /api/jobs/:jobId/finish`). Changes answer with the whole updated job. A finished inspection is read-only: every change to it answers 423. |
 | Photos (`server/routes/photos.js`) | `GET /api/photos/:photoId` |
 | Me (`server/routes/me.js`) | `GET` and `POST /api/me/recent-sheets` |
@@ -318,6 +318,7 @@ GitHub Actions runs lint, build, `npm test` and `npm run test:db` on Linux for e
 | `GEMINI_FALLBACK_MODEL` | No | Started when the main model fails or takes more than 2.5 s (default `gemini-3.1-flash-lite`). Set it empty to turn it off. |
 | `GEMINI_SECOND_FALLBACK_MODEL` | No | Third model, started after another 2.5 s (default `gemini-3.5-flash-lite`). Set it empty to turn it off. |
 | `GEMINI_HEDGE_MS` | No | How long to wait for a slow model before starting the next one too (default `2500`). Lower answers sooner but uses quota on two models. |
+| `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | On a host | The bot check on sign-in and registration (see **Bot check on sign-in and registration**). Set both or neither. Leave them empty locally; to try the check, use Cloudflare's test keys listed in `.env.example`. |
 | `MONGODB_TEST_URI` | For `test:db` | For example `mongodb://127.0.0.1:27017`. |
 
 `.env` is git-ignored. Never commit it, and don't share your secret or your key.
@@ -328,7 +329,7 @@ GitHub Actions runs lint, build, `npm test` and `npm run test:db` on Linux for e
 
 `npm test` runs the automated tests (Node's built-in test runner, so there is nothing extra to install). Each test name starts with an ID (`AI-`, `GEM-`, `CLI-`, `CON-`, `SYNC-` ...) that the Testing Log refers to. Write a known bug as a `{ todo }` test: it shows without failing the run, and starts passing once the bug is fixed.
 
-`npm run test:ai-live` signs in as a local test account (`ai-smoke@hiips360.test`, created on the first run) and checks real Gemini answers against the reference scenario. It waits 13 s between requests to stay under the free-tier limit; set `AI_SMOKE_DELAY_MS=0` to turn the wait off. Pass a folder to also send your own photos: `npm run test:ai-live -- path/to/photos`. Only run it against your own local API: its default password is in this repository.
+`npm run test:ai-live` signs in as a local test account (`ai-smoke@hiips360.test`, created on the first run) and checks real Gemini answers against the reference scenario. It waits 13 s between requests to stay under the free-tier limit; set `AI_SMOKE_DELAY_MS=0` to turn the wait off. Pass a folder to also send your own photos: `npm run test:ai-live -- path/to/photos`. Only run it against your own local API: its default password is in this repository. It sends Cloudflare's dummy captcha token, so it works with the Turnstile keys unset or set to the test keys, and is refused by real keys.
 
 **Trying it on a phone**
 
@@ -354,14 +355,16 @@ GitHub Actions runs lint, build, `npm test` and `npm run test:db` on Linux for e
 
 ## Deploying
 
-The prototype runs on Railway today. One Node service serves both the API and the built app, and it needs a hosted MongoDB and a Gemini key. Whoever takes the project over needs their own Railway (or Vercel) account, MongoDB and Gemini key: the ones the student team used belong to students and should be replaced at handoff, with a new `SESSION_SECRET` and a new Gemini key.
+The student team's copy runs on Railway. One Node service serves both the API and the built app, and it needs a hosted MongoDB, a Gemini key and the two Turnstile keys.
+
+**Handoff (agreed with the client on 23/11/2026):** WorkSafeBC forks this repository on GitHub and hosts the fork on its own accounts, following the steps below. Nothing is transferred from the student team: the fork gets its own database, its own Gemini key, its own Turnstile widget and a new `SESSION_SECRET`. The student team's Railway project, database and keys are shut down after the course and hold only test data.
 
 ### Railway (current)
 
 `railway.json` already holds the build and start settings: build with `npm run build`, run `node scripts/db-setup.mjs` before each deploy, start with `npm start`, and check `/api/health`.
 
 1. **A database.** Either add a MongoDB service to the Railway project (**+ New > Database > MongoDB**) and use its connection URL, or create a free cluster on [MongoDB Atlas](https://www.mongodb.com/atlas), add a database user, allow access from anywhere (`0.0.0.0/0`) under Network Access because Railway's outgoing address isn't fixed by default, and copy its `mongodb+srv://` URI with `/hiips360` as the database name.
-2. **The service.** In Railway, **New project > Deploy from GitHub repo**, and pick this repository. Railway reads `railway.json` and the Node version from `package.json` (`engines`).
+2. **The service.** In Railway, **New project > Deploy from GitHub repo**, and pick this repository (or your fork of it). Railway reads `railway.json` and the Node version from `package.json` (`engines`).
 3. **Variables** (the service's **Variables** tab):
 
    | Variable | Value |
@@ -371,10 +374,12 @@ The prototype runs on Railway today. One Node service serves both the API and th
    | `SESSION_SECRET` | A new random 64-character hex string, never one used locally |
    | `GEMINI_API_KEY` | The production Gemini key (with billing on, if officers will use it) |
    | `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL`, `GEMINI_SECOND_FALLBACK_MODEL` | Optional; the defaults are the tested models |
+   | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | The two keys from step 5 |
 
    Don't set `PORT`; Railway sets it.
 4. **A web address.** **Settings > Networking > Generate Domain**, or add your own domain there. HTTPS is automatic, and the app needs it to install to a phone's home screen.
-5. **Check it.** Open `https://<your-domain>/api/health`. It should answer `{"ok":true,"db":"connected"}`. Then create an account and walk through the demo scenario.
+5. **The bot check.** In the [Cloudflare dashboard](https://dash.cloudflare.com/) (a free account is enough), open **Turnstile > Add widget**, enter the domain from step 4 as the hostname and choose **Managed** mode. Put its site key and secret key in the Variables from step 3. The server reads them when it starts, so there's no rebuild. Until both are set, the API logs a warning and sign-in has no bot check.
+6. **Check it.** Open `https://<your-domain>/api/health`. It should answer `{"ok":true,"db":"connected"}`. Then create an account (the check appears above the button) and walk through the demo scenario.
 
 Every push to the connected branch deploys again. The API applies the database validators and indexes on every start, so there is nothing to run by hand after a deploy.
 
@@ -391,14 +396,15 @@ The client may host it on Vercel later. This hasn't been tried, and it needs a c
    - The sign-in and AI rate limits are counted in memory, so on Vercel each running copy of the function counts separately and a restart resets them. A shared store would be needed for them to hold.
 6. **Test it on a preview deployment** before pointing the real address at it.
 
-### A password before the landing page
+### Bot check on sign-in and registration
 
-The client asked for a single shared password in front of the whole site, so bots can't reach the sign-up page.
+The client's concern is bots creating accounts and spending the Gemini quota. Officers and employers are welcome to sign up, so the site stays open and the Sign in and Create an account forms carry a [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) check instead. This replaced the earlier idea of a shared site password (B-35, decided 23/11/2026).
 
-- **On Vercel:** Vercel has this built in as [Password Protection](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/password-protection) under Deployment Protection. It is a paid feature (not on the free Hobby plan; an add-on per project on Pro), and nothing in the code changes.
-- **On Railway:** Railway has no password option, so it would have to be added to the app: for example a `SITE_PASSWORD` variable and a small page that asks for it before anything else loads. This isn't built yet.
-
-Either way, the app's own accounts stay as they are behind it.
+- **What officers see:** usually a box that ticks itself within a second or two. Cloudflare asks for a tap only when it's unsure. There's no picture puzzle, which matters with gloves on. Someone already signed in never sees it.
+- **How it works:** the form gets a one-time token from Cloudflare and sends it with the email and password. `server/routes/auth.js` checks the token with Cloudflare (`server/services/captcha.js`) after the form passes validation and before any database work, so a bot never reaches the password check or creates an account. A missing or rejected token is a 400; if Cloudflare can't be reached, a 503 asks the officer to try again in a minute. The site key reaches the page from `GET /api/auth/captcha`, so both keys live on the server and the build doesn't change.
+- **Keys:** `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (Deploying, step 5). With both unset the check is off, which is how local development, `npm test` and `npm run test:db` run.
+- **Tests:** `tests/captcha.test.js` (`CAP-` IDs) covers the service and the routes with Cloudflare faked.
+- **On Vercel** it works the same way, with the same two variables.
 
 ## Working on the code
 

@@ -80,12 +80,20 @@ const remember = ({ user }) => {
     return { user };
 };
 
-export async function login({ email, password }) {
-    return remember(await request("/login", { method: "POST", body: { email, password } }));
+// captchaToken is the Turnstile token from <Captcha>, or null when the server has the bot check off
+export async function login({ email, password, captchaToken }) {
+    return remember(await request("/login", { method: "POST", body: { email, password, captchaToken } }));
 }
 
-export async function register({ name, email, password }) {
-    return remember(await request("/register", { method: "POST", body: { name, email, password } }));
+export async function register({ name, email, password, captchaToken }) {
+    return remember(await request("/register", { method: "POST", body: { name, email, password, captchaToken } }));
+}
+
+// The Turnstile site key for the sign-in and register forms, or null when the server doesn't check for bots.
+// Throws when the server can't be reached.
+export async function getCaptchaSiteKey() {
+    const data = await request("/captcha");
+    return typeof data?.siteKey === "string" && data.siteKey ? data.siteKey : null;
 }
 
 export async function logout() {

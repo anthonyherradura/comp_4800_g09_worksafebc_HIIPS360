@@ -1,15 +1,18 @@
 // Auth API. The contract matches src/auth/authService.js:
-//   POST /api/auth/register  { name, email, password } -> 201 { user }
-//   POST /api/auth/login     { email, password }       -> 200 { user }
-//   POST /api/auth/logout                              -> 204
-//   GET  /api/auth/me                                  -> 200 { user } | 401
+//   POST /api/auth/register  { name, email, password, captchaToken } -> 201 { user }
+//   POST /api/auth/login     { email, password, captchaToken }       -> 200 { user }
+//   POST /api/auth/logout                                            -> 204
+//   GET  /api/auth/me                                                -> 200 { user } | 401
+//   GET  /api/auth/captcha                                           -> 200 { siteKey } (null when the check is off)
 // Errors are { error } with a message that is safe to show to the officer.
+// captchaToken is the Cloudflare Turnstile token, checked only when the keys are set (services/captcha.js).
 
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { rateLimit } from "express-rate-limit";
 import User from "../models/User.js";
 import { validateAccount, validateLogin } from "../../src/auth/validation.js";
+import { captchaSiteKey, verifyCaptcha } from "../services/captcha.js";
 
 const BCRYPT_ROUNDS = 12;
 // Compared against when the email doesn't exist, so a miss takes as long as a wrong password
@@ -35,6 +38,22 @@ const firstError = (errors) => Object.values(errors)[0];
 const regenerateSession = (req) =>
     new Promise((resolve, reject) => req.session.regenerate((err) => (err ? reject(err) : resolve())));
 
+const CAPTCHA_ERRORS = {
+    missing: { status: 400, error: "Complete the check that you're human, then try again." },
+    failed: { status: 400, error: "The check that you're human didn't go through. Try it again." },
+    unavailable: { status: 503, error: "The check that you're human isn't working right now. Try again in a minute." },
+};
+
+// Runs after the form is validated and before any database work or password hashing.
+// Answers the request and returns false when the bot check fails.
+async function passesCaptcha(req, res) {
+    const result = await verifyCaptcha(req.body?.captchaToken, req.ip);
+    if (result.ok) return true;
+    const { status, error } = CAPTCHA_ERRORS[result.reason];
+    res.status(status).json({ error });
+    return false;
+}
+
 async function signIn(req, user) {
     // New session id on every sign-in, so a planted session id can't be reused (session fixation)
     await regenerateSession(req);
@@ -48,6 +67,7 @@ router.post("/register", authLimiter, async (req, res) => {
 
     const errors = validateAccount({ name, email, password });
     if (Object.keys(errors).length > 0) return res.status(400).json({ error: firstError(errors) });
+    if (!(await passesCaptcha(req, res))) return;
 
     const key = normaliseEmail(email);
     const duplicate = { error: "An account with this email already exists. Sign in instead." };
@@ -73,6 +93,7 @@ router.post("/login", authLimiter, async (req, res) => {
 
     const errors = validateLogin({ email, password });
     if (Object.keys(errors).length > 0) return res.status(400).json({ error: firstError(errors) });
+    if (!(await passesCaptcha(req, res))) return;
 
     const user = await User.findOne({ email: normaliseEmail(email) });
     const matches = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
@@ -88,6 +109,12 @@ router.post("/logout", (req, res, next) => {
         res.clearCookie("hiips360.sid");
         res.status(204).end();
     });
+});
+
+// The public site key for the sign-in and register forms. It comes from the server, not the build, so a host
+// sets both keys in one place and the form never asks for a check the server won't make.
+router.get("/captcha", (req, res) => {
+    res.json({ siteKey: captchaSiteKey() });
 });
 
 router.get("/me", async (req, res) => {

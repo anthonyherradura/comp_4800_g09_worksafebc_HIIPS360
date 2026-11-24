@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../../auth/useAuth";
 import { validateLogin } from "../../auth/validation";
+import Captcha from "../../components/Captcha";
 import FormField from "../../components/FormField";
 import { LogoLockup } from "../../components/Logo";
 import "../../styles/forms.css";
@@ -15,6 +16,8 @@ const InfoIcon = () => (
     </svg>
 );
 
+const CAPTCHA_NOT_READY ="Complete the check that you're human, just above the button, then try again.";
+
 export default function LoginPage() {
     const { user, login } = useAuth();
     const navigate = useNavigate();
@@ -24,6 +27,8 @@ export default function LoginPage() {
     const [submitted, setSubmitted] = useState(false);
     const [formError, setFormError] = useState("");
     const [pending, setPending] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState("");
+    const captchaRef = useRef(null);
 
     // Send the officer back to the page they were trying to open
     const redirectTo = location.state?.from?.pathname ?? "/jobs";
@@ -44,14 +49,19 @@ export default function LoginPage() {
         const nextErrors = validateLogin(values);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
+        if (captchaToken === "") {
+            setFormError(CAPTCHA_NOT_READY);
+            return;
+        }
 
         setPending(true);
         try {
-            await login(values);
+            await login({ ...values, captchaToken });
             navigate(redirectTo, { replace: true });
         } catch (error) {
             setFormError(error.message);
             setPending(false);
+            captchaRef.current?.reset(); // the token has been used
         }
     };
 
@@ -87,6 +97,8 @@ export default function LoginPage() {
                     error={errors.password}
                 />
                 <p className="auth-hint">At least 8 characters.</p>
+
+                <Captcha action="login" onChange={setCaptchaToken} ref={captchaRef} />
 
                 <button type="submit" className="btn btn-orange auth-submit" disabled={pending}>
                     {pending ? "Signing in…" : "Sign in"}

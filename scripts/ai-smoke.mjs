@@ -10,6 +10,9 @@ const BASE = process.env.AI_SMOKE_BASE || `http://localhost:${process.env.PORT |
 const EMAIL = process.env.AI_SMOKE_EMAIL || "ai-smoke@hiips360.test";
 const PASSWORD = process.env.AI_SMOKE_PASSWORD || "local-smoke-test-only";
 const DELAY_MS = Number(process.env.AI_SMOKE_DELAY_MS ?? 13_000);
+// Cloudflare's dummy token. A local API with the Turnstile keys unset ignores it, and Cloudflare's test keys accept it.
+// Real Turnstile keys reject it, which is right: this script is for your own local API only.
+const CAPTCHA_TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
 const PHOTO_TYPES = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp" };
 // 1x1 white PNG: there is nothing in it to find
 const BLANK_PNG = Buffer.from(
@@ -43,9 +46,12 @@ function formatProblem(suggestion) {
 
 async function signIn() {
     const json = (body) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    let res = await fetch(`${BASE}/api/auth/login`, json({ email: EMAIL, password: PASSWORD }));
+    let res = await fetch(`${BASE}/api/auth/login`, json({ email: EMAIL, password: PASSWORD, captchaToken: CAPTCHA_TOKEN }));
     if (res.status === 401) {
-        res = await fetch(`${BASE}/api/auth/register`, json({ name: "AI smoke test", email: EMAIL, password: PASSWORD }));
+        res = await fetch(
+            `${BASE}/api/auth/register`,
+            json({ name: "AI smoke test", email: EMAIL, password: PASSWORD, captchaToken: CAPTCHA_TOKEN })
+        );
     }
     if (!res.ok) throw new Error(`Sign-in failed (${res.status}): ${(await res.json()).error}`);
     return res.headers.get("set-cookie").split(";")[0];

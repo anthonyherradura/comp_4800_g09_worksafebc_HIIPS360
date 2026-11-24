@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../../auth/useAuth";
 import { MIN_PASSWORD_LENGTH, validateRegister } from "../../auth/validation";
+import Captcha from "../../components/Captcha";
 import FormField from "../../components/FormField";
 import { LogoLockup } from "../../components/Logo";
 import "../../styles/forms.css";
 import "../Login/Login.css";
 import "./Register.css";
+
+const CAPTCHA_NOT_READY = "Complete the check that you're human, just above the button, then try again.";
 
 export default function RegisterPage() {
     const { user, register } = useAuth();
@@ -16,6 +19,8 @@ export default function RegisterPage() {
     const [submitted, setSubmitted] = useState(false);
     const [formError, setFormError] = useState("");
     const [pending, setPending] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState("");
+    const captchaRef = useRef(null);
 
     if (user) return <Navigate to="/jobs" replace />;
 
@@ -32,15 +37,20 @@ export default function RegisterPage() {
         const nextErrors = validateRegister(values);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
+        if (captchaToken === "") {
+            setFormError(CAPTCHA_NOT_READY);
+            return;
+        }
 
         setPending(true);
         try {
             const { name, email, password } = values;
-            await register({ name, email, password });
+            await register({ name, email, password, captchaToken });
             navigate("/jobs", { replace: true });
         } catch (error) {
             setFormError(error.message);
             setPending(false);
+            captchaRef.current?.reset(); // the token has been used
         }
     };
 
@@ -93,6 +103,8 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     error={errors.confirmPassword}
                 />
+
+                <Captcha action="register" onChange={setCaptchaToken} ref={captchaRef} />
 
                 <button type="submit" className="btn btn-orange auth-submit" disabled={pending}>
                     {pending ? "Creating account…" : "Create account"}

@@ -1,0 +1,34 @@
+/* The Turnstile widget on the sign-in and register forms (components/Captcha.jsx) */
+
+/* Turnstile's widget is 65px tall; holding the space stops the button jumping when it appears */
+.captcha-box {
+    min-height: 65px;
+    width: 100%;
+}
+
+.captcha-error {
+    margin: 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--wsbc-huckleberry-red);
+    background: var(--wsbc-ash-grey);
+    color: var(--wsbc-bodycopy);
+}
+
+/* Looks like a link; padding makes it a full-size touch target */
+.captcha-retry {
+    display: inline;
+    margin: 0;
+    padding: 12px 2px;
+    border: 0;
+    background: none;
+    color: var(--wsbc-bodycopy);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.captcha-retry:focus-visible {
+    outline: 3px solid var(--wsbc-black);
+    outline-offset: 2px;
+}
