@@ -16,13 +16,14 @@ An officer support/guidance tool.
 7. [Who it is for](#who-it-is-for)
 8. [Design principles](#design-principles)
 9. [Technical overview](#technical-overview)
-10. [Getting started](#getting-started)
-11. [Deploying](#deploying)
-12. [Working on the code](#working-on-the-code)
-13. [Content and ownership](#content-and-ownership)
-14. [How we will know whether it worked](#how-we-will-know-whether-it-worked)
-15. [Risks and known limitations](#risks-and-known-limitations)
-16. [Project documents](#project-documents)
+10. [Handing over to WorkSafeBC](#handing-over-to-worksafebc)
+11. [Getting started](#getting-started)
+12. [Deploying](#deploying)
+13. [Working on the code](#working-on-the-code)
+14. [Content and ownership](#content-and-ownership)
+15. [How we will know whether it worked](#how-we-will-know-whether-it-worked)
+16. [Risks and known limitations](#risks-and-known-limitations)
+17. [Project documents](#project-documents)
 
 ---
 
@@ -126,7 +127,7 @@ The prototype covers the whole MVP flow, from picking a job site to a findings P
 
 | Area | What exists |
 |---|---|
-| Landing, sign-in, register (`/`, `/login`, `/register`) | Says plainly that this is a prototype and offers to install the app. Accounts are stored in MongoDB; sessions are an httpOnly cookie. |
+| Landing, sign-in, register (`/`, `/login`, `/register`) | Says plainly that this is a prototype and offers to install the app. Accounts are stored in MongoDB; sessions are an httpOnly cookie. Sign-in and registration have a bot check (Cloudflare Turnstile) once its keys are set. |
 | Job sites (`/jobs`) | Each officer has their own list of job sites, in progress and finished, with when each was started and last opened or finished. Opening one makes it the current job, shown in the header. Adding a finished site's name again starts a new, numbered visit ("Oak St yard (2)"). |
 | Pick the protocol sheet (Home, `/home`) | Browse or search the sheets by name, or describe the work (or take a site photo) and ask Gemini to suggest up to three. A job can have up to 5 sheets. Every suggestion can be accepted, changed or ignored. |
 | Planning (`/planning`) | The chosen sheets' checklist for before and during the visit (Before you go, On arrival, Walking the site), each item marked ready or not applicable, plus visit notes. |
@@ -245,6 +246,54 @@ Built against the [WorkSafeBC UX/UI Design System](https://ux-static.online.dv.w
 - **Feedback:** the autosave snackbar for save confirmation, and alerts at the top of the page with the alert icon.
 - **Accessibility:** target WCAG 2.1 AA. Some default palette pairings fall short of AA contrast, for example white text on the standard blue button, white on orange, and orange text on white. The landing page uses black on orange (8.3:1) and a body-copy outline button (10.4:1) instead. Review these pairings with the UX team before release.
 - **Touch targets:** at least 44px, and press feedback respects reduced motion.
+
+## Handing over to WorkSafeBC
+
+At the client meeting on 23 November 2026, WorkSafeBC chose to run its own copy of HIIPS360: fork this repository on GitHub and host the fork on accounts WorkSafeBC controls. Nothing is transferred from the student team, and the team never has access to WorkSafeBC's copy or its data. This section is the checklist. The detailed steps are under [Deploying](#deploying).
+
+**Fork it before the course ends.** This repository is public but sits on a student's personal GitHub account. A fork made now keeps WorkSafeBC's copy safe whatever happens to this one after Fall 2026.
+
+### Accounts you need
+
+| Service | What it does | Cost for a prototype |
+|---|---|---|
+| GitHub | Holds your fork of the code. The host deploys from it. | Free |
+| Railway, or another Node.js host | Runs the app. One service serves both the web app and the API. | Paid by usage after Railway's trial. Check Railway's pricing page. |
+| MongoDB: a MongoDB service on Railway, or [MongoDB Atlas](https://www.mongodb.com/atlas) | Stores accounts, job sites, hazards and photos. | Atlas has a free cluster of about 512 MB. Photos are shrunk to roughly 0.3 to 1 MB each, so a pilot fits; wider use needs a paid tier. |
+| [Google AI Studio](https://aistudio.google.com/) (a Gemini API key) | Suggests protocol sheets and hazard names. | The free tier allows about 5 requests a minute and 20 a day per model (Nov 2026). Fine for demos, too small for officers using it every day. Turn on billing for real use. |
+| [Cloudflare](https://dash.cloudflare.com/) (Turnstile) | The bot check on sign-in and registration. | Free |
+
+Everything except the AI suggestions works without a Gemini key, and officers can always pick sheets and name hazards themselves.
+
+### Steps, in order
+
+1. **Fork.** Open this repository on GitHub, click **Fork**, and choose WorkSafeBC's account or organization.
+2. **Database.** Create one and copy its connection URI ([Deploying, step 1](#railway-current)). Use `/hiips360` as the database name.
+3. **Gemini key.** In Google AI Studio, **Get API key**. It goes only in the host's variables, never in the code.
+4. **Deploy the fork on Railway** ([Deploying, steps 2 to 4](#railway-current)) with `NODE_ENV=production`, `MONGODB_URI`, a new `SESSION_SECRET` and `GEMINI_API_KEY`.
+5. **Bot check.** Create a Turnstile widget for your web address and add its two keys ([Deploying, step 5](#railway-current)).
+6. **Check it.** `https://<your-address>/api/health` should answer `{"ok":true,"db":"connected"}`. Create an account (the check appears above the button), then walk through the demo scenario at the end of [Getting started](#getting-started).
+7. **Share the address** with the officers taking part. Anyone can create an account; the bot check keeps out automated sign-ups.
+
+The new copy starts with an empty database, so officers create new accounts. Nothing from the student team's copy needs to come across: it holds only test accounts and test data.
+
+### Secrets
+
+- Every secret lives in the host's variables. `.env` is for a developer's own computer and is never committed.
+- Make new ones for your copy: `SESSION_SECRET`, the Gemini key and the Turnstile keys. Never reuse the student team's.
+- Changing `SESSION_SECRET` later signs everyone out. Nothing else is lost.
+
+### Keeping it running
+
+- Every push to the fork's main branch deploys again. The API updates the database's rules and indexes when it starts, so there is nothing to run by hand.
+- The automated checks (lint, build, tests) run on GitHub Actions. GitHub turns Actions off in a new fork: turn them on in the fork's **Actions** tab.
+- Adding a protocol sheet is described under [Working on the code](#working-on-the-code). What isn't built yet is listed under [Project status](#project-status), and known limits under [Risks and known limitations](#risks-and-known-limitations).
+- If Cloudflare is ever down and officers can't sign in, delete the two `TURNSTILE_` variables on the host. The check turns off when the server restarts, with no rebuild; put them back afterwards.
+
+### What the student team does
+
+After the final presentation (30 November 2026), the team shuts down its own Railway project, database, Gemini key and Turnstile widget. They hold only test data, so nothing is lost.
+
 ## Getting started
 
 Running it on your own computer needs Node.js, MongoDB and a Gemini API key. Each developer has their own database and their own key, so test accounts aren't shared. [AUTH_BACKEND_SETUP.md](AUTH_BACKEND_SETUP.md) has a step-by-step MongoDB guide for Windows, with what the terminal should print.
@@ -357,7 +406,7 @@ GitHub Actions runs lint, build, `npm test` and `npm run test:db` on Linux for e
 
 The student team's copy runs on Railway. One Node service serves both the API and the built app, and it needs a hosted MongoDB, a Gemini key and the two Turnstile keys.
 
-**Handoff (agreed with the client on 23/11/2026):** WorkSafeBC forks this repository on GitHub and hosts the fork on its own accounts, following the steps below. Nothing is transferred from the student team: the fork gets its own database, its own Gemini key, its own Turnstile widget and a new `SESSION_SECRET`. The student team's Railway project, database and keys are shut down after the course and hold only test data.
+WorkSafeBC hosts its own fork with its own accounts and keys. [Handing over to WorkSafeBC](#handing-over-to-worksafebc) has the checklist; the steps below are the detail.
 
 ### Railway (current)
 
